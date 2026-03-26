@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预测中台 - 全息情报矩阵</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sys-theme: #00f3ff;
+            --dark-bg: #050b14;
+            --panel-bg: rgba(10, 15, 30, 0.7);
+            --glow-spread: 15px;
+        }
+
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg);
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px; color: #e2e8f0; transition: background-color 0.5s; }
+
+        .font-tech { font-family: 'Orbitron', sans-serif; }
+
+        .tech-panel { background: var(--panel-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 var(--glow-spread) rgba(0, 0, 0, 0.8), inset 0 0 calc(var(--glow-spread)/2) var(--sys-theme); position: relative; transition: all 0.3s ease; }
+        .tech-panel::before, .tech-panel::after { content: ''; position: absolute; width: 10px; height: 10px; border: 2px solid var(--sys-theme); transition: border-color 0.5s;}
+        .tech-panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .tech-panel::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+        .neon-btn { background: linear-gradient(45deg, transparent 5%, var(--sys-theme) 5%); background-size: 200%; background-position: left; border: 1px solid var(--sys-theme); color: var(--sys-theme); box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset; transition: all 0.3s; }
+        .neon-btn:hover { background-position: right; background-color: var(--sys-theme); color: #000; box-shadow: 0 0 20px var(--sys-theme); }
+        .terminal-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--sys-theme); }
+        .terminal-input:focus { outline: none; border-color: var(--sys-theme); box-shadow: 0 0 10px var(--sys-theme); }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--sys-theme); border-radius: 2px; opacity: 0.5; }
+
+        .nav-active { background: rgba(255,255,255,0.05); color: var(--sys-theme) !important; border-left: 4px solid var(--sys-theme) !important; box-shadow: inset 10px 0 20px rgba(0,0,0,0.5); }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+
+        .holo-card {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .holo-card::before, .holo-card::after {
+            content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid var(--sys-theme); opacity: 0.5; transition: all 0.3s ease;
+        }
+        .holo-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .holo-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+        .holo-card:hover {
+            border-color: var(--sys-theme);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .holo-card:hover::before, .holo-card:hover::after {
+            width: 25px; height: 25px; opacity: 1; box-shadow: 0 0 10px var(--sys-theme);
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex">
+
+    <aside class="w-64 tech-panel h-full flex flex-col border-r border-gray-800 z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-800">
+            <h1 class="text-xl font-black font-tech tracking-widest text-white drop-shadow-[0_0_10px_var(--sys-theme)]" style="color: var(--sys-theme)">NEXUS-18</h1>
+        </div>
+        <nav class="flex-1 py-6 px-4 space-y-3">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center px-4 py-3 text-gray-400 nav-active rounded-r transition-all">
+                <span class="mr-3">📊</span> 聚合情报大屏
+            </button>
+            <button onclick="switchTab('model')" id="nav-model" class="w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800/50 rounded border-l-4 border-transparent transition-all">
+                <span class="mr-3">🧬</span> 深度演算引擎
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800/50 rounded border-l-4 border-transparent transition-all">
+                <span class="mr-3">⚙️</span> 系统协议设定
+            </button>
+        </nav>
+        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center font-tech">SYS_VER 6.0.1_STABLE</div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative z-10">
+
+        <header class="h-20 tech-panel flex items-center justify-between px-8 border-b border-gray-800">
+            <div class="flex items-center space-x-4">
+                <span class="w-3 h-3 rounded-full animate-pulse shadow-[0_0_15px_var(--sys-theme)]" style="background-color: var(--sys-theme)"></span>
+                <span class="text-sm font-bold tracking-wider" style="color: var(--sys-theme)">SYS_CORE <span class="font-tech text-xs ml-1">[ONLINE]</span></span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 uppercase tracking-widest">Operator</p>
+                    <p class="font-bold text-white tracking-wider">{{ username }} <span class="font-tech text-[10px] ml-1 px-1 border rounded" style="color: var(--sys-theme); border-color: var(--sys-theme)">ROOT</span></p>
+                </div>
+                <a href="/logout" class="neon-btn px-4 py-2 text-xs font-bold rounded">断开连接 <span class="font-tech ml-1">DC</span></a>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 relative" id="main-content-area">
+
+            <div id="page-dashboard" class="space-y-6 block">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="tech-panel p-6 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1 font-bold">矩阵库容量 <span class="font-tech text-gray-600 ml-1">CAPACITY</span></p>
+                        <p class="text-3xl font-tech text-white">{{ rumors|length }} <span class="text-sm font-sans font-bold" style="color: var(--sys-theme)">项情报</span></p>
+                    </div>
+                    <div class="tech-panel p-6 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1 font-bold">动态安全阈值 <span class="font-tech text-gray-600 ml-1">THRESHOLD</span></p>
+                        <p id="global-threshold" class="text-3xl font-tech text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">--%</p>
+                    </div>
+                    <div class="tech-panel p-6 rounded-lg">
+                        <p class="text-gray-400 text-xs mb-1 font-bold">当前算力负载 <span class="font-tech text-gray-600 ml-1">WORKLOAD</span></p>
+                        <p id="engine-status" class="text-3xl font-bold">检测中...</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                    <div class="xl:col-span-1 space-y-6">
+                        <div class="tech-panel p-6 rounded-lg relative overflow-hidden group">
+                            <div class="absolute inset-0 opacity-10 pointer-events-none animate-[scan_2s_ease-in-out_infinite]" style="background: linear-gradient(to bottom, transparent, var(--sys-theme), transparent);"></div>
+                            <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-3 relative z-10">
+                                <h2 class="text-sm font-bold text-white tracking-widest border-l-4 pl-2" style="border-color: var(--sys-theme)">NLP 语义解析节点</h2>
+                                <span class="px-2 py-1 text-[10px] font-tech text-black bg-white rounded font-bold animate-pulse">ANALYZING</span>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">最新截获流</span>
+                                    <span id="latest-source" class="text-[10px] font-bold uppercase" style="color: var(--sys-theme)">信源: --</span>
+                                </div>
+                                <p id="rumor-content" class="text-sm font-medium text-gray-300 mb-6 min-h-[50px] leading-relaxed">
+                                    [ 等待数据流注入... ]
+                                </p>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs font-bold" style="color: var(--sys-theme)">
+                                        <span>语义特征匹配度 <span class="font-tech text-[9px] text-gray-500 ml-1">FEATURE_MATCH</span></span>
+                                        <span id="score-text" class="text-lg font-tech font-bold text-white">--%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-900 border border-gray-700 rounded-full h-1.5 relative overflow-hidden">
+                                        <div id="progress-bar" class="h-full rounded-full transition-all duration-1000" style="width: 0%; background-color: var(--sys-theme); box-shadow: 0 0 10px var(--sys-theme)"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-gray-500 font-tech mt-2">
+                                        <span id="nlp-status">模型状态: 离线</span>
+                                        <span>误差率: <span id="error-rate" class="text-white">--</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tech-panel p-6 rounded-lg">
+                            <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-white pl-2 mb-4">手动注入终端 <span class="font-tech text-xs text-gray-500 ml-2">MANUAL_INSERT</span></h2>
+                            <form action="/add_rumor" method="POST" class="space-y-4">
+                                <input type="text" name="category" placeholder="分类 (如：屏幕、电池)" required class="w-full terminal-input p-2 text-sm rounded">
+                                <input type="text" name="source" placeholder="信源 (如：彭博社)" required class="w-full terminal-input p-2 text-sm rounded">
+                                <textarea name="content" rows="3" placeholder=">> 键入情报源数据..." required class="w-full terminal-input p-2 text-sm rounded resize-none"></textarea>
+                                <button type="submit" class="w-full neon-btn py-2 text-sm font-bold tracking-widest">注入系统矩阵</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="xl:col-span-2 tech-panel p-6 rounded-lg flex flex-col h-full min-h-[500px] relative overflow-hidden">
+                        <div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: radial-gradient(var(--sys-theme) 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-800 relative z-10">
+                            <div class="flex items-center space-x-3">
+                                <h2 class="text-sm font-bold text-white tracking-widest border-l-4 pl-2" style="border-color: var(--sys-theme)">全息情报网格</h2>
+                                <span class="text-[10px] font-tech text-gray-500 animate-pulse">HOLOGRAPHIC_GRID</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span>
+                                <span class="px-2 py-1 text-[10px] font-tech text-gray-300 bg-gray-900 border border-gray-700 rounded tracking-wider">SECURE_LINK</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-auto flex-1 custom-scrollbar pr-2 pb-4 relative z-10" id="rumor-stream">
+                            {% if rumors|length == 0 %}
+                            <div class="col-span-1 lg:col-span-2 w-full h-full flex flex-col items-center justify-center text-gray-600 font-tech text-sm tracking-widest space-y-4 opacity-50 min-h-[300px]">
+                                <div class="w-12 h-12 border-2 border-dashed border-gray-600 rounded-full animate-spin-slow"></div>
+                                <span>[ GRID INITIALIZATION FAILED: NO DATA ]</span>
+                            </div>
+                            {% else %}
+                                {% for r in rumors %}
+                                <div class="rumor-card holo-card p-5 rounded flex flex-col group h-[200px]">
+                                    <div class="flex justify-between items-start mb-3 border-b border-gray-800/60 pb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-1.5 h-1.5 bg-white rounded-sm animate-pulse" style="box-shadow: 0 0 5px var(--sys-theme)"></span>
+                                            <span class="text-[10px] font-tech text-gray-500">ID:{{ r.rumor_id }}</span>
+                                        </div>
+                                        <span class="bg-black/80 border px-2 py-0.5 text-[10px] font-bold tracking-wider rounded-sm shadow-md" style="color: var(--sys-theme); border-color: var(--sys-theme);">
+                                            {{ r.category }}
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 overflow-hidden relative">
+                                        <p class="text-xs text-gray-300 leading-relaxed font-medium">{{ r.content }}</p>
+                                        <div class="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[#0a0f18] to-transparent group-hover:from-black transition-colors"></div>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-t border-gray-800/40 flex justify-between items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                                        <span class="text-[10px] text-gray-400 font-tech truncate max-w-[60%] source-col" data-original="{{ r.source }}">
+                                            SRC: {{ r.source }}
+                                        </span>
+                                        <a href="/delete_rumor/{{ r.rumor_id }}" onclick="return confirm('CRITICAL: 确定熔断并剔除该网格节点吗？')" class="text-red-500/80 hover:text-red-400 bg-red-900/10 px-2 py-1 rounded-sm text-[9px] font-tech tracking-widest transition-all uppercase border border-transparent hover:border-red-500/30">
+                                            PURGE
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-model" class="hidden h-full flex flex-col items-center justify-start pt-6 space-y-6 pb-20">
+                <div class="text-center">
+                    <div id="model-spinner" class="w-24 h-24 border-4 border-r-transparent border-l-transparent rounded-full mx-auto mb-6 transition-all duration-500" style="border-top-color: var(--sys-theme); border-bottom-color: #fff;"></div>
+                    <h2 id="model-title" class="text-2xl font-bold text-white tracking-widest mb-2">深度计算核心待命</h2>
+                    <p id="model-status-text" class="font-tech text-gray-500 uppercase tracking-widest">AWAITING_COMMAND //_ 终端指令待命</p>
+                </div>
+
+                <div class="tech-panel w-full max-w-3xl h-56 rounded-lg p-6 flex flex-col">
+                    <div class="flex items-center justify-between mb-2 border-b border-gray-800 pb-2">
+                        <span class="text-xs font-tech text-gray-500">SYSTEM_TERMINAL</span>
+                        <div class="flex space-x-2"><div class="w-2 h-2 rounded-full bg-red-500"></div><div class="w-2 h-2 rounded-full bg-yellow-500"></div><div class="w-2 h-2 rounded-full bg-green-500"></div></div>
+                    </div>
+                    <div id="terminal-output" class="flex-1 overflow-y-auto font-tech text-xs leading-loose opacity-90 transition-all" style="color: var(--sys-theme)">
+                        > 终端等待执行指令输入...
+                    </div>
+                </div>
+
+                <div id="model-result-card" class="hidden w-full max-w-4xl tech-panel p-8 rounded-lg mt-8 border-t-4" style="border-color: var(--sys-theme)">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-between border-b border-gray-800 pb-4">
+                        <span class="flex items-center"><span class="text-2xl mr-3">🔮</span> AI 动态结构化提取报告</span>
+                        <button onclick="resetAndStartTraining()" class="neon-btn px-4 py-1 text-xs font-bold font-tech rounded">RE-RUN</button>
+                    </h3>
+                    <div id="dynamic-report-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-settings" class="hidden space-y-6">
+                <h2 class="text-xl font-bold text-white tracking-widest border-l-4 pl-3" style="border-color: var(--sys-theme)">系统全局协议重载</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="tech-panel p-6 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">01 // 视觉能量场协议 (GLOW)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">实时调整系统外骨骼发光强度，拖动以修改底层渲染参数。</p>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="flex justify-between text-[11px] text-gray-300 font-bold"><span id="glow-label">当前强度：15px</span></label>
+                            <input type="range" id="glow-slider" min="0" max="40" value="15" class="w-full" oninput="updateGlow(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">02 // 核心光谱重置 (THEME)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">切换系统交互底色，立即生效并覆盖全局组件。</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="updateTheme('#00f3ff')" class="w-full py-2 rounded text-[10px] font-tech font-bold text-black shadow-lg hover:scale-105 transition-transform" style="background-color: #00f3ff">CYAN</button>
+                            <button onclick="updateTheme('#00ff66')" class="w-full py-2 rounded text-[10px] font-tech font-bold text-black shadow-lg hover:scale-105 transition-transform" style="background-color: #00ff66">MATRIX</button>
+                            <button onclick="updateTheme('#ff00ea')" class="w-full py-2 rounded text-[10px] font-tech font-bold text-white shadow-lg hover:scale-105 transition-transform" style="background-color: #ff00ea">NEON</button>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">03 // 自动防投毒清洗 (FILTER)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">开启后，系统将强制隐藏单数卡片数据，保护矩阵安全。</p>
+                        </div>
+                        <div class="flex items-center justify-between bg-black/50 p-3 rounded border border-gray-800">
+                            <span class="text-[11px] font-bold text-white">开启严格清洗模式</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="strict-toggle" class="sr-only peer" onchange="toggleStrictMode(this.checked)">
+                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked: background-color: var(--sys-theme)"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">04 // 信源匿名脱敏 (ANONYMITY)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">在前端矩阵中对所有情报来源进行加密混淆，保护内部线人安全。</p>
+                        </div>
+                        <div class="flex items-center justify-between bg-black/50 p-3 rounded border border-gray-800">
+                            <span class="text-[11px] font-bold text-white">开启信源加密遮蔽</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="anonymity-toggle" class="sr-only peer" onchange="toggleAnonymity(this.checked)">
+                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked: background-color: var(--sys-theme)"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">05 // 神经网络深度 (DEPTH)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">调节底层演算的张量层数。层数越高预测越精准，但将显著增加负载。</p>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="flex justify-between text-[11px] text-gray-300 font-bold"><span id="depth-label">当前计算层数：64 Layers</span></label>
+                            <input type="range" id="depth-slider" min="16" max="256" step="16" value="64" class="w-full" oninput="updateDepth(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg border border-red-900/50 flex flex-col justify-between" style="box-shadow: inset 0 0 20px rgba(220,38,38,0.05);">
+                        <div>
+                            <h3 class="text-red-500 font-bold mb-4 text-sm tracking-widest border-b border-red-900/50 pb-2">06 // 应急物理销毁 (PURGE)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">危急状态下使用。将瞬间清空前端缓存矩阵并熔断连接，此操作不可逆！</p>
+                        </div>
+                        <button onclick="triggerPurge()" class="w-full py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors font-tech text-xs font-bold tracking-widest rounded shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                            执行销毁指令 (INITIATE PURGE)
+                        </button>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-lg border border-green-900/50 flex flex-col justify-between" style="box-shadow: inset 0 0 20px rgba(34,197,94,0.05);">
+                        <div>
+                            <h3 class="text-green-500 font-bold mb-4 text-sm tracking-widest border-b border-green-900/50 pb-2">07 // 应急数据快照恢复 (RESTORE)</h3>
+                            <p class="text-[11px] text-gray-500 mb-6">当底层矩阵数据被意外熔断清空时，可调用此协议从系统底层的加密快照中瞬间恢复核心初始情报。</p>
+                        </div>
+                        <a href="/restore_data" class="w-full py-2 border border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors font-tech text-xs font-bold tracking-widest rounded shadow-[0_0_15px_rgba(34,197,94,0.3)] text-center block">
+                            执行恢复指令 (INITIATE RESTORE)
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script id="flask-data" type="text/plain">
+        {{ rumors | tojson | safe }}
+    </script>
+
+    <script>
+        // --- 1. 安全获取真实数据库记录 ---
+        let rumorData = [];
+        try {
+            const rawText = document.getElementById('flask-data').textContent.trim();
+            // 在这里将大括号用字符串拼接的方式打断，绕过 Jinja2 引擎的死板检查
+            const braceCheck = '{' + '{';
+            if (rawText && !rawText.includes(braceCheck)) {
+                rumorData = JSON.parse(rawText);
+            } else {
+                throw new Error("Local Preview Fallback");
+            }
+        } catch (e) {
+            console.warn("未检测到 Flask 后端引擎，已启动本地安全沙箱模式加载演示数据。");
+            rumorData = [
+                { rumor_id: 6, category: "人工智能 (AI CORE)", content: "独占 Apple Intelligence 2.0 终极形态，纯端侧百亿参数大模型重构系统", source: "Mark Gurman", created_at: "2026-03-26" },
+                { rumor_id: 5, category: "能源系统 (BATTERY)", content: "引入全新叠层电池技术，容量跃升至 5000mAh，支持 40W 高速闪充", source: "供应链内部线人", created_at: "2026-03-26" },
+                { rumor_id: 4, category: "机身架构 (DESIGN)", content: "彻底取消所有实体按键，采用固态马达阵列提供高精度触觉反馈", source: "MacRumors", created_at: "2026-03-26" }
+            ];
+        }
+
+        const totalRecords = rumorData.length;
+
+        // --- 2. 大屏各项动态引擎逻辑 ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const thresholdEl = document.getElementById('global-threshold');
+            const statusEl = document.getElementById('engine-status');
+
+            let calcThreshold = 75.0 + (totalRecords * 2.5);
+            if (calcThreshold > 98.9) calcThreshold = 98.9;
+            thresholdEl.innerText = '> ' + calcThreshold.toFixed(1) + '%';
+
+            if (totalRecords === 0) {
+                statusEl.innerHTML = '休眠 <span class="text-lg font-tech">STANDBY</span>';
+                statusEl.className = 'text-3xl font-bold text-gray-600';
+            } else if (totalRecords <= 3) {
+                statusEl.innerHTML = '冷启动 <span class="text-lg font-tech">COLD START</span>';
+                statusEl.className = 'text-3xl font-bold text-blue-400';
+            } else if (totalRecords <= 8) {
+                statusEl.innerHTML = '深层演算 <span class="text-lg font-tech">COMPUTING</span>';
+                statusEl.className = 'text-3xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]';
+            } else {
+                statusEl.innerHTML = '算力满载 <span class="text-lg font-tech">OVERLOAD</span>';
+                statusEl.className = 'text-3xl font-bold text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]';
+            }
+
+            if (rumorData.length > 0) {
+                const latestRumor = rumorData[0];
+
+                let targetContent = document.getElementById('rumor-content');
+                targetContent.innerText = '';
+                let textStr = latestRumor.content;
+                let i = 0;
+                let typingEffect = setInterval(() => {
+                    if(i < textStr.length) { targetContent.innerHTML += textStr.charAt(i); i++; }
+                    else { clearInterval(typingEffect); }
+                }, 30);
+
+                document.getElementById('latest-source').innerText = '信源: ' + latestRumor.source;
+
+                let baseScore = 85.0;
+                let hash = latestRumor.content.length + latestRumor.source.length;
+                let fakeConfidence = (baseScore + (hash % 14) + 0.45).toFixed(2);
+
+                document.getElementById('score-text').innerText = fakeConfidence + '%';
+                document.getElementById('nlp-status').innerHTML = '模型状态: <span class="text-green-400">特征提取完毕</span>';
+                document.getElementById('error-rate').innerText = '±' + (100 - fakeConfidence).toFixed(2) + '%';
+
+                setTimeout(() => {
+                    document.getElementById('progress-bar').style.width = fakeConfidence + '%';
+                }, 500);
+            } else {
+                document.getElementById('rumor-content').innerText = "[ 矩阵库为空，无法建立解析模型 ]";
+            }
+        });
+
+        // --- 3. 动态模型报告 ---
+        function generateDynamicReport() {
+            const container = document.getElementById('dynamic-report-grid');
+            container.innerHTML = '';
+
+            if(rumorData.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">警告：矩阵数据库为空，无法生成分析模型。</p>';
+                return;
+            }
+
+            const uniqueCategories = [...new Set(rumorData.map(item => item.category))];
+
+            uniqueCategories.forEach(cat => {
+                const latestData = rumorData.find(item => item.category === cat);
+                const baseScore = 80;
+                const bonus = (latestData.content.length % 15) + (latestData.source.length % 4) + (latestData.rumor_id % 2);
+                const confScore = (baseScore + bonus).toFixed(1);
+
+                container.innerHTML += `
+                    <div class="bg-black/40 p-5 rounded-lg border border-gray-800 hover:border-white transition-colors duration-300">
+                        <p class="text-gray-500 text-xs mb-2 font-bold flex justify-between">
+                            <span>维度：${cat}</span>
+                            <span class="font-tech text-[10px] text-gray-600">ID#${latestData.rumor_id}</span>
+                        </p>
+                        <p class="text-white font-bold text-sm leading-relaxed mb-4">${latestData.content}</p>
+                        <div class="flex justify-between items-center text-[10px] font-tech text-gray-400 mb-1">
+                            <span>CONFIDENCE_LEVEL:</span>
+                            <span class="font-bold text-sm" style="color: var(--sys-theme)">${confScore}%</span>
+                        </div>
+                        <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full" style="width: ${confScore}%; background-color: var(--sys-theme);"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 4. 选项卡切换与黑客演练 ---
+        let isTrained = false, isTraining = false;
+        const logs = [
+            "> 启动深层神经网络连接协议... [OK]",
+            "> 执行全量级数据遍历... 提取样本总量： " + totalRecords,
+            "> 构建张量计算核心模型 (Neural Matrix V5.1)...",
+            "> 分析文本特征并剔除无效污染数据... 清洗完成",
+            "> 开始演算模型层叠注入... Epoch 1/1000",
+            "> EPOCH 250: LOSS: 0.1245 - ACCURACY: 82.4%",
+            "> EPOCH 800: LOSS: 0.0532 - ACCURACY: 94.2%",
+            "> 模型收敛完毕，各项预测指标达到最优阈值。",
+            "> 正在整合分类矩阵，生成可视化报告...",
+            "> [系统提示] 演算任务执行完毕。"
+        ];
+
+        function switchTab(tab) {
+            document.querySelectorAll('main > div > div[id^="page-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('page-' + tab).classList.remove('hidden');
+            ['dashboard','model','settings'].forEach(id => {
+                let btn = document.getElementById('nav-'+id);
+                btn.classList.remove('nav-active');
+                btn.className = "w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800/50 rounded border-l-4 border-transparent transition-all";
+            });
+            document.getElementById('nav-'+tab).classList.add('nav-active');
+
+            if(tab === 'model') startTrainingSimulation();
+        }
+
+        function startTrainingSimulation() {
+            if (isTrained || isTraining) return;
+            isTraining = true;
+            const term = document.getElementById('terminal-output'), spin = document.getElementById('model-spinner');
+            term.innerHTML = ''; document.getElementById('model-result-card').classList.add('hidden');
+            spin.className = "w-24 h-24 border-4 border-r-transparent border-l-transparent rounded-full mx-auto mb-6 animate-spin transition-all";
+            spin.style.borderTopColor = 'var(--sys-theme)'; spin.style.borderBottomColor = '#fff';
+
+            document.getElementById('model-status-text').innerText = "EXECUTING DEEP LEARNING...";
+            document.getElementById('model-status-text').style.color = "var(--sys-theme)";
+            document.getElementById('model-title').innerText = "AI 核心正在暴力演算中";
+
+            let i = 0, interval = setInterval(() => {
+                if (i < logs.length) {
+                    term.innerHTML += logs[i++] + '<br>';
+                    term.scrollTop = term.scrollHeight;
+                } else {
+                    clearInterval(interval); isTraining = false; isTrained = true;
+                    spin.className = "w-24 h-24 border-4 rounded-full mx-auto mb-6 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all";
+                    spin.style.borderColor = 'var(--sys-theme)';
+                    document.getElementById('model-status-text').innerText = "CALCULATION COMPLETE [100%]";
+                    document.getElementById('model-status-text').style.color = "#fff";
+                    document.getElementById('model-title').innerText = "苹果18pro max结构化报告生成完毕";
+
+                    generateDynamicReport();
+                    document.getElementById('model-result-card').classList.remove('hidden');
+                    document.getElementById('model-result-card').classList.add('animate-fade-in-up');
+                }
+            }, 300);
+        }
+        function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
+
+        // --- 5. 设置页面的 7 大硬件协议联动 ---
+        function updateGlow(val) {
+            document.getElementById('glow-label').innerText = '当前强度：' + val + 'px';
+            document.documentElement.style.setProperty('--glow-spread', val + 'px');
+        }
+
+        function updateTheme(color) {
+            document.documentElement.style.setProperty('--sys-theme', color);
+            let progress = document.getElementById('progress-bar');
+            if(progress) progress.style.backgroundColor = color;
+        }
+
+        function toggleStrictMode(isChecked) {
+            const rows = document.querySelectorAll('.holo-card');
+            rows.forEach((row, index) => {
+                if(isChecked && index % 2 !== 0) row.style.display = 'none';
+                else row.style.display = 'flex';
+            });
+        }
+
+        function toggleAnonymity(isChecked) {
+            const sourceCells = document.querySelectorAll('.source-col');
+            sourceCells.forEach(cell => {
+                if (isChecked) {
+                    cell.innerHTML = '<span class="bg-gray-800 text-gray-400 px-2 py-1 rounded font-tech text-[9px] tracking-widest border border-gray-600">ENCRYPTED</span>';
+                } else {
+                    cell.innerText = "SRC: " + cell.getAttribute('data-original');
+                }
+            });
+        }
+
+        function updateDepth(val) {
+            document.getElementById('depth-label').innerText = '当前计算层数：' + val + ' Layers';
+            const glowVal = parseInt(val) / 8;
+            document.getElementById('glow-slider').value = glowVal;
+            updateGlow(glowVal);
+        }
+
+        function triggerPurge() {
+            if(confirm("CRITICAL WARNING: 确定要执行物理销毁协议吗？\n警告：系统缓存的矩阵数据将被瞬间熔断抹除！")) {
+                const mainArea = document.getElementById('main-content-area');
+                mainArea.innerHTML = `
+                    <div class="h-full w-full bg-red-900/20 flex flex-col items-center justify-center animate-[glitch_0.2s_infinite]">
+                        <h1 class="text-red-500 font-tech text-6xl mb-4 tracking-widest font-black drop-shadow-[0_0_20px_rgba(239,68,68,1)]">SYSTEM PURGED</h1>
+                        <p class="text-red-400 font-tech text-xl tracking-widest">ALL LOCAL DATA HAS BEEN SECURELY ERASED.</p>
+                        <p class="text-gray-500 font-tech text-sm mt-8">CONNECTION SEVERED // FATAL_ERROR</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

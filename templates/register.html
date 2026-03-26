@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>申请权限 - iPhone 18 Pro Max 数据中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 h-screen flex justify-start items-center pl-[12%] bg-[url('/static/login_bg.png')] bg-cover bg-center bg-no-repeat">
+
+    <div class="absolute inset-0 bg-blue-900/20"></div>
+
+    <div class="glass-panel relative z-10 p-10 rounded-2xl shadow-2xl w-[400px]">
+        <div class="text-left mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-wide">✨ 注册权限</h1>
+            <p class="text-blue-400 text-sm">创建您的独立分析师档案</p>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-500/20 border border-red-500 text-red-400 text-sm p-3 rounded-lg mb-4 text-center">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/register" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-gray-300 text-sm font-bold mb-1">设置账号</label>
+                <p class="text-xs text-gray-500 mb-2">支持中英文、数字组合，最长20个字符</p>
+                <input type="text" name="username" required placeholder="如：系统管理员01" class="w-full px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-600 text-white focus:outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <div>
+                <label class="block text-gray-300 text-sm font-bold mb-1">设置秘钥</label>
+                <p class="text-xs text-gray-500 mb-2">安全要求：至少6位字符，建议字母数字组合</p>
+                <input type="password" name="password" required placeholder="请输入大于6位的密码" class="w-full px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-600 text-white focus:outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold py-3 mt-4 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
+                立 即 注 册
+            </button>
+        </form>
+
+        <p class="text-left text-gray-400 text-sm mt-8 border-t border-gray-700/50 pt-6">
+            已有档案？ <a href="/" class="text-blue-400 hover:text-blue-300 underline font-bold">返回直接登录</a>
+        </p>
+    </div>
+
+</body>
+</html>
