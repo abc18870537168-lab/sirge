@@ -1,12 +1,16 @@
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 import sqlite3
 import datetime
+import os
 
 app = Flask(__name__)
 app.secret_key = 'apple_rumor_super_secret_key'
 
+# 核心修复 1：获取云端服务器的绝对路径，确保数据库文件永远不会“迷路”
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'apple_rumor.db')
 
-# 核心新增：SQLite 字典工厂函数，让它像 MySQL 一样返回字典格式的数据
+
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -15,8 +19,8 @@ def dict_factory(cursor, row):
 
 
 def get_db_connection():
-    # 数据会直接保存在这个本地文件里，再也不用看云端服务器的脸色了
-    conn = sqlite3.connect('apple_rumor.db')
+    # 使用绝对路径连接数据库
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = dict_factory
     return conn
 
@@ -29,7 +33,6 @@ def init_system_data():
         connection = get_db_connection()
         with connection:
             cursor = connection.cursor()
-            # 1. 自动建表逻辑 (SQLite 的语法略有不同)
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +61,6 @@ def init_system_data():
                 )
             """)
 
-            # 2. 自动注入 6 条高价值测试数据
             cursor.execute("SELECT COUNT(*) as cnt FROM rumors")
             if cursor.fetchone()['cnt'] < 6:
                 cursor.execute("DELETE FROM rumors")
@@ -75,13 +77,16 @@ def init_system_data():
                     ('人工智能 (AI CORE)', '独占 Apple Intelligence 2.0 终极形态，纯端侧百亿参数大模型重构系统',
                      'Mark Gurman')
                 ]
-                # 注意：SQLite 传参使用 ? 而不是 %s
                 for d in core_data:
                     cursor.execute("INSERT INTO rumors (category, content, source) VALUES (?, ?, ?)", d)
     except Exception as e:
         print("数据初始化失败:", e)
     finally:
         if 'connection' in locals() and connection: connection.close()
+
+
+# 核心修复 2：把初始化数据的函数提出来，只要云端加载代码，就强制执行建表！
+init_system_data()
 
 
 # ==========================================
@@ -205,5 +210,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    init_system_data()
     app.run(debug=True, port=8000)
