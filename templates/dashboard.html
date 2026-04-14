@@ -25,7 +25,6 @@
 
         .font-tech { font-family: 'Orbitron', sans-serif; }
 
-        /* 高级发光面板 */
         .tech-panel { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 calc(var(--glow-spread)/2) rgba(var(--sys-theme), 0.2); position: relative; transition: all 0.3s ease; }
         .tech-panel::before, .tech-panel::after { content: ''; position: absolute; width: 10px; height: 10px; border: 2px solid var(--sys-theme); transition: border-color 0.5s;}
@@ -48,13 +47,12 @@
         @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
         @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
 
-        /* 空间计算 3D 全息卡片 */
         .holo-card {
             position: relative;
             background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.6));
             border: 1px solid rgba(255,255,255,0.05);
-            transform-style: preserve-3d; /* 开启 3D 空间 */
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 阻尼回弹过渡 */
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .holo-card::before, .holo-card::after {
             content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid var(--sys-theme); opacity: 0.3; transition: all 0.4s ease;
@@ -62,7 +60,6 @@
         .holo-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
         .holo-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
 
-        /* 3D 悬浮与视差特效 */
         .holo-card:hover {
             border-color: rgba(var(--sys-theme), 0.5);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 243, 255, 0.1);
@@ -74,19 +71,16 @@
             width: 30px; height: 30px; opacity: 1; box-shadow: 0 0 15px var(--sys-theme);
         }
 
-        /* 纯 CSS 雷达可视化 */
         .radar-box { position: relative; width: 60px; height: 60px; border-radius: 50%; border: 1px solid rgba(var(--sys-theme), 0.3); background: rgba(0,243,255,0.05); overflow: hidden; box-shadow: 0 0 15px rgba(0,243,255,0.1); }
         .radar-box::before { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 70%, var(--sys-theme) 100%); animation: radar-spin 2s linear infinite; }
         .radar-box::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, transparent 40%, rgba(0,243,255,0.1) 41%, transparent 42%, transparent 70%, rgba(0,243,255,0.2) 71%, transparent 72%); }
         @keyframes radar-spin { 100% { transform: rotate(360deg); } }
         .radar-dot { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; box-shadow: 0 0 8px #fff; animation: blink 2s infinite; }
 
-        /* 底部信息流底座 */
         .ticker-wrap { position: fixed; bottom: 0; left: 0; width: 100%; height: 22px; background: rgba(0,0,0,0.8); border-top: 1px solid rgba(255,255,255,0.1); z-index: 50; overflow: hidden; display: flex; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
         .ticker-move { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; font-size: 10px; font-family: 'Orbitron', monospace; color: var(--sys-theme); opacity: 0.8; letter-spacing: 2px; }
         @keyframes ticker { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
 
-        /* 开机熔断动画遮罩 */
         #boot-screen { position: fixed; inset: 0; z-index: 99999; background: #010409; display: flex; flex-direction: column; justify-content: center; padding: 40px; color: var(--sys-theme); transition: opacity 0.5s ease; }
         .boot-line { font-family: 'Orbitron', monospace; font-size: 12px; margin-bottom: 8px; opacity: 0; }
     </style>
@@ -222,9 +216,9 @@
                             <div class="mt-6 pt-4 border-t border-gray-800/80 relative z-10">
                                 <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-purple-500 pl-2 mb-4" style="border-color: #a855f7;">全网嗅探协议 <span class="font-tech text-[10px] text-gray-500 ml-2">WEB_SPIDER</span></h2>
                                 <button id="spider-btn" onclick="triggerSpider()" class="w-full py-3 text-xs font-bold tracking-[0.2em] border border-purple-500/50 text-purple-400 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]">
-                                    ▶ 启动深度嗅探协议
+                                    ▶ 监听独立爬虫信号
                                 </button>
-                                <p id="spider-log" class="text-[10px] font-tech text-purple-400 mt-3 h-4 hidden text-center animate-pulse tracking-widest">INITIATING SPIDER PROTOCOL...</p>
+                                <p id="spider-log" class="text-[10px] font-tech text-purple-400 mt-3 h-4 hidden text-center animate-pulse tracking-widest">AWAITING LOCAL NODE PUSH...</p>
                             </div>
 
                         </div>
@@ -416,7 +410,6 @@
     </script>
 
     <script>
-        // --- 0. 系统开机动画引擎 ---
         const bootScreen = document.getElementById('boot-screen');
         const bootLogs = document.getElementById('boot-logs');
         const initLogs = [
@@ -428,7 +421,6 @@
             "Welcome back, Operator."
         ];
 
-        // 如果页面是带数据过来的，才播放启动动画 (提升体验)
         if (!sessionStorage.getItem('booted')) {
             let logIdx = 0;
             let logInterval = setInterval(() => {
@@ -451,7 +443,6 @@
             bootScreen.style.display = 'none';
         }
 
-        // --- 1. 安全获取真实数据库记录 ---
         let rumorData = [];
         try {
             const rawText = document.getElementById('flask-data').textContent.trim();
@@ -472,16 +463,14 @@
 
         const totalRecords = rumorData.length;
 
-        // --- 动态填充跑马灯 ---
         if(rumorData.length > 0) {
             let tickerStr = "";
             rumorData.forEach(r => {
                 tickerStr += `> [INTERCEPTED]: NODE_${r.rumor_id} | SRC: ${r.source.toUpperCase()} | STATUS: CONFIRMED //_ `;
             });
-            document.getElementById('ticker-text').innerText = tickerStr + tickerStr; // 重复一次使得滚动更连贯
+            document.getElementById('ticker-text').innerText = tickerStr + tickerStr;
         }
 
-        // --- 2. 大屏各项动态引擎逻辑 ---
         document.addEventListener('DOMContentLoaded', function() {
             const thresholdEl = document.getElementById('global-threshold');
             const statusEl = document.getElementById('engine-status');
@@ -490,7 +479,6 @@
             if (calcThreshold > 99.8) calcThreshold = 99.8;
             if (totalRecords === 0) calcThreshold = 0;
 
-            // 帅气的数字上涨特效
             let currNum = 0;
             let numInter = setInterval(() => {
                 if(currNum >= calcThreshold) { thresholdEl.innerText = '>' + calcThreshold.toFixed(1) + '%'; clearInterval(numInter); }
@@ -541,7 +529,6 @@
             }
         });
 
-        // --- 3. 动态模型报告 ---
         function generateDynamicReport() {
             const container = document.getElementById('dynamic-report-grid');
             container.innerHTML = '';
@@ -578,7 +565,6 @@
             });
         }
 
-        // --- 4. 选项卡切换与黑客演练 ---
         let isTrained = false, isTraining = false;
         const logs = [
             "> INITIALIZING DEEP NEURAL LINK... [OK]",
@@ -638,7 +624,6 @@
         }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
 
-        // --- 5. 设置页面的 7 大硬件协议联动 ---
         function updateGlow(val) {
             document.getElementById('glow-label').innerText = '当前强度：' + val + 'px';
             document.documentElement.style.setProperty('--glow-spread', val + 'px');
@@ -690,54 +675,26 @@
             }
         }
 
-        // --- 6. 爬虫引擎控制逻辑 (新增) ---
+        // --- 核心爬虫控制逻辑变更 ---
         function triggerSpider() {
             const btn = document.getElementById('spider-btn');
             const log = document.getElementById('spider-log');
 
-            // UI 变成加载状态
             btn.disabled = true;
-            btn.innerHTML = '⚡ 嗅探程序运行中...';
+            btn.innerHTML = '⚡ 监听独立爬虫信号中...';
             btn.classList.add('bg-purple-900/50', 'cursor-not-allowed', 'border-purple-800');
             btn.classList.remove('hover:bg-purple-600', 'hover:border-purple-600');
             log.classList.remove('hidden');
 
-            let dots = 0;
-            const logInterval = setInterval(() => {
-                dots = (dots + 1) % 4;
-                log.innerText = "SCANNING MACRUMORS NODES" + ".".repeat(dots);
-            }, 300);
+            log.innerText = ">> PLEASE RUN 'spider.py' ON LOCAL NODE";
 
-            // 向后端发送请求触发爬虫
-            fetch('/api/run_spider', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    clearInterval(logInterval);
-                    if(data.code === 200) {
-                        log.innerText = ">> DATA INTERCEPTED !";
-                        log.style.color = "#4ade80"; // 绿色成功
-                        // 延迟 0.8 秒钟刷新页面，展示刚抓到的新数据
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 800);
-                    } else {
-                        log.innerText = "!! ERROR: " + data.msg;
-                        log.style.color = "#ef4444"; // 红色失败
-                        btn.disabled = false;
-                        btn.innerHTML = '▶ 重试深度嗅探';
-                        btn.classList.remove('bg-purple-900/50', 'cursor-not-allowed', 'border-purple-800');
-                        btn.classList.add('hover:bg-purple-600', 'hover:border-purple-600');
-                    }
-                })
-                .catch(error => {
-                    clearInterval(logInterval);
-                    log.innerText = "!! CONNECTION LOST";
-                    log.style.color = "#ef4444";
-                    btn.disabled = false;
-                    btn.innerHTML = '▶ 重试深度嗅探';
-                    btn.classList.remove('bg-purple-900/50', 'cursor-not-allowed', 'border-purple-800');
-                    btn.classList.add('hover:bg-purple-600', 'hover:border-purple-600');
-                });
+            setTimeout(() => {
+                alert("监听模式已激活！\n\n请在您的本地终端（不限网环境）执行真实爬虫代码：\npython spider.py\n\n若本地终端提示推送成功，请手动刷新本页面以加载最新数据。");
+                btn.disabled = false;
+                btn.innerHTML = '▶ 监听独立爬虫信号';
+                btn.classList.remove('bg-purple-900/50', 'cursor-not-allowed', 'border-purple-800');
+                btn.classList.add('hover:bg-purple-600', 'hover:border-purple-600');
+            }, 800);
         }
     </script>
 </body>
