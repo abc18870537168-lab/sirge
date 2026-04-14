@@ -1,12 +1,16 @@
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 import sqlite3
 import os
+import traceback
 
 app = Flask(__name__)
 app.secret_key = 'apple_rumor_super_secret_key'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'apple_rumor.db')
+
+# 全局变量：用于捕捉初始化时的致命错误
+INIT_ERROR = None
 
 def dict_factory(cursor, row):
     d = {}
@@ -21,6 +25,7 @@ def get_db_connection():
     return conn
 
 def init_system_data():
+    global INIT_ERROR
     try:
         connection = get_db_connection()
         with connection:
@@ -63,6 +68,7 @@ def init_system_data():
                 )
             """)
             
+            # --- 智能注入初始数据 ---
             cursor.execute("SELECT user_id FROM users LIMIT 2")
             users = cursor.fetchall()
             if len(users) < 2:
@@ -75,24 +81,41 @@ def init_system_data():
 
             cursor.execute("SELECT COUNT(*) as cnt FROM rumors")
             if cursor.fetchone()['cnt'] == 0:
-                # 【防弹加固】防止新数据库没有序列导致报错
-                try:
-                    cursor.execute("DELETE FROM sqlite_sequence WHERE name='rumors'")
-                    cursor.execute("DELETE FROM sqlite_sequence WHERE name='predictions'")
-                except:
-                    pass
-                
+                # 【终极防弹装甲】直接动态获取最新插入的编号，彻底告别 0 字节崩溃！
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('处理器', '全系标配台积电 2nm 工艺的 A20 芯片，性能提升巨大', '郭明錤')")
+                r1_id = cursor.lastrowid # 获取这条新闻的真实 ID
+                
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('屏幕外观', '18 Pro Max 将彻底取消实体按键，采用全固态压感设计', '彭博社')")
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('拍照摄像', '主摄升级为全新可变光圈，夜景能力史诗级提升', '数码闲聊站')")
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('电池续航', '将采用全新高密度电池技术，支持更快的超级快充', 'MacRumors')")
 
-                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 4)", (u1,))
-                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 10)", (u2,))
+                # 把打分精准绑定到第一条新闻上
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, ?, 1, 4)", (u1, r1_id))
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, ?, 1, 10)", (u2, r1_id))
+                
     except Exception as e:
-        print(f"系统初始化失败啦: {e}")
+        INIT_ERROR = traceback.format_exc()
+        print("初始化严重报错:", INIT_ERROR)
 
 init_system_data()
+
+# ==========================================
+# 终极错误雷达：只要系统敢崩溃，直接把红字拍在脸上！
+# ==========================================
+@app.errorhandler(Exception)
+def handle_exception(e):
+    error_msg = traceback.format_exc()
+    return f"""
+    <div style="background:#111; color:white; padding:40px; font-family:sans-serif;">
+        <h1 style="color:#ff4444;">🚨 警报：服务器内部崩溃啦！</h1>
+        <p style="font-size:18px;">别慌！请把下面黑框里的红字全选，直接复制发给 AI：</p>
+        <pre style="background:#000; color:#ff4444; padding:20px; border:1px solid #ff4444; border-radius:8px; overflow-x:auto;">{error_msg}</pre>
+    </div>
+    """, 500
+
+# ==========================================
+# 高级后台业务接口
+# ==========================================
 
 @app.route('/api/receive_spider_data', methods=['POST'])
 def receive_spider_data():
@@ -175,8 +198,15 @@ def calculate_model():
     finally:
         if 'connection' in locals() and connection: connection.close()
 
+# ==========================================
+# 网页路由部分 
+# ==========================================
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
+    if INIT_ERROR:
+        return f"<div style='padding:40px;'><h1 style='color:red;'>🚨 数据库初始化失败！</h1><p>请把下面的红字发给 AI：</p><pre style='color:red;'>{INIT_ERROR}</pre></div>"
+        
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -212,6 +242,9 @@ def register():
 
 @app.route('/dashboard')
 def dashboard():
+    if INIT_ERROR:
+        return f"<div style='padding:40px;'><h1 style='color:red;'>🚨 数据库初始化失败！</h1><p>请把下面的红字发给 AI：</p><pre style='color:red;'>{INIT_ERROR}</pre></div>"
+        
     if 'username' not in session: return redirect(url_for('login'))
     try:
         connection = get_db_connection()
