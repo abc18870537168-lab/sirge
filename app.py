@@ -1,4 +1,3 @@
-# 导入我们需要的工具包
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 import sqlite3
 import os
@@ -6,9 +5,6 @@ import os
 app = Flask(__name__)
 app.secret_key = 'apple_rumor_super_secret_key'
 
-# ==========================================
-# 数据库配置部分
-# ==========================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'apple_rumor.db')
 
@@ -21,11 +17,11 @@ def dict_factory(cursor, row):
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = dict_factory
-    conn.execute("PRAGMA foreign_keys = ON") # 强制开启外键约束
+    conn.execute("PRAGMA foreign_keys = ON") 
     return conn
 
 def init_system_data():
-    """系统初始化：融合了你写的专业 SQL 建表语句和测试数据"""
+    """系统初始化：修复了外键冲突 Bug，确保数据 100% 恢复成功"""
     try:
         connection = get_db_connection()
         with connection:
@@ -68,21 +64,34 @@ def init_system_data():
                 )
             """)
             
-            # --- 自动塞入初始数据 ---
-            cursor.execute("SELECT COUNT(*) as cnt FROM users")
-            if cursor.fetchone()['cnt'] == 0:
-                cursor.execute("INSERT INTO users (username, password_hash, role) VALUES ('张三', 'hash123', 'user')")
-                cursor.execute("INSERT INTO users (username, password_hash, role) VALUES ('极客李四', 'hash456', 'admin')")
+            # --- 智能注入初始数据 ---
+            # 1. 确保至少有两个用户用来做演示打分
+            cursor.execute("SELECT user_id FROM users LIMIT 2")
+            users = cursor.fetchall()
+            if len(users) < 2:
+                cursor.execute("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家A', '123', 'admin')")
+                cursor.execute("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家B', '123', 'user')")
+                cursor.execute("SELECT user_id FROM users LIMIT 2")
+                users = cursor.fetchall()
+            
+            # 拿到真实存在的两个用户 ID
+            u1, u2 = users[0]['user_id'], users[1]['user_id'] if len(users) > 1 else users[0]['user_id']
 
+            # 2. 如果情报被销毁了，重新注入
             cursor.execute("SELECT COUNT(*) as cnt FROM rumors")
             if cursor.fetchone()['cnt'] == 0:
+                # 强制重置自增 ID
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='rumors'")
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='predictions'")
+                
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('核心算力 (SOC)', '将采用台积电 2nm 工艺的 A20 芯片', '郭明錤')")
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('机身架构 (DESIGN)', '将彻底取消实体按键，采用全固态设计', '彭博社')")
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('视觉面板 (DISPLAY)', '首发新一代微透镜 OLED 面板，峰值亮度突破 4000 尼特', 'DSCC')")
                 cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('能源系统 (BATTERY)', '引入全新叠层电池技术，容量跃升至 5000mAh', '供应链内部线人')")
 
-                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (1, 1, 1, 4)")
-                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (2, 1, 1, 10)")
+                # 用真实存在的 user_id 打分，绝对不会再触发外键报错！
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 4)", (u1,))
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 10)", (u2,))
     except Exception as e:
         print(f"系统初始化失败啦: {e}")
 
@@ -120,7 +129,6 @@ def receive_spider_data():
 
 @app.route('/api/purge_all', methods=['POST'])
 def purge_all():
-    """物理销毁接口"""
     if 'username' not in session: return jsonify({"code": 403})
     try:
         connection = get_db_connection()
@@ -133,15 +141,12 @@ def purge_all():
 
 @app.route('/api/calculate_model', methods=['GET'])
 def calculate_model():
-    """深度演算引擎：计算置信度，并将具体情报明细发给前端"""
     if 'username' not in session: return jsonify({"code": 403})
-    
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM rumors")
         rumors = cursor.fetchall()
-        
         report_data = []
         categories = set(r['category'] for r in rumors)
         
@@ -150,15 +155,13 @@ def calculate_model():
             node_count = len(cat_rumors)
             latest_content = cat_rumors[-1]['content'] 
             
-            # --- 真实的算法逻辑 ---
             trust_score = 50.0 
-            authoritative_sources = ['彭博社', '郭明錤', 'MacRumors', 'DSCC']
-            core_keywords = ['台积电', '2nm', 'OLED', '固态', '电池']
+            authoritative_sources = ['彭博社', '郭明錤', 'MacRumors', 'DSCC', 'IT之家', 'ITHome', '36氪']
+            core_keywords = ['台积电', '2nm', 'OLED', '固态', '电池', '芯片', '苹果', 'iOS']
             
             for r in cat_rumors:
                 if any(s in (r['source'] or '') for s in authoritative_sources): trust_score += 15.0
                 if any(k in r['content'] for k in core_keywords): trust_score += 8.0
-                
                 cursor.execute("SELECT AVG(confidence_level) as avg_conf FROM predictions WHERE rumor_id = ?", (r['rumor_id'],))
                 pred = cursor.fetchone()
                 if pred and pred['avg_conf']: trust_score += (pred['avg_conf'] * 2.0)
@@ -170,7 +173,7 @@ def calculate_model():
                 "node_count": node_count,
                 "latest_content": latest_content,
                 "confidence": round(trust_score, 1),
-                "details": cat_rumors # 【核心修改】把这个分类下的所有详细情报也发给前端！
+                "details": cat_rumors 
             })
             
         return jsonify({"code": 200, "data": report_data})
@@ -257,19 +260,17 @@ def delete_rumor(rumor_id):
 
 @app.route('/restore_data')
 def restore_data():
-    """【核弹级修复】：为了防止自增ID报错，直接先删表，再重建，保证 100% 恢复成功！"""
+    """【真正修复版】先删表，再由 init_system_data 重新建立，根治所有错乱问题"""
     if 'username' not in session: return redirect(url_for('login'))
     try:
         connection = get_db_connection()
         with connection:
             cursor = connection.cursor()
-            # 必须先删子表 predictions，再删主表 rumors
             cursor.execute("DROP TABLE IF EXISTS predictions")
             cursor.execute("DROP TABLE IF EXISTS rumors")
     except:
         pass
     
-    # 重新建表并注入数据，ID完美从1开始
     init_system_data() 
     return redirect(url_for('dashboard'))
 
