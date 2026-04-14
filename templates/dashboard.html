@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* 这里定义了一些全局的颜色变量和发光特效 */
         :root {
             --sys-theme: #00f3ff;
             --dark-bg: #030710;
@@ -26,7 +25,6 @@
 
         .font-tech { font-family: 'Orbitron', sans-serif; }
 
-        /* 带发光效果的面板 */
         .tech-panel { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 var(--glow-spread) rgba(var(--sys-theme), 0.3), inset 0 0 calc(var(--glow-spread)/2) rgba(var(--sys-theme), 0.2); position: relative; transition: all 0.3s ease; }
         .tech-panel::before, .tech-panel::after { content: ''; position: absolute; width: 10px; height: 10px; border: 2px solid var(--sys-theme); transition: border-color 0.5s;}
@@ -37,6 +35,7 @@
         .neon-btn:hover { background-position: right; background-color: var(--sys-theme); color: #000; box-shadow: 0 0 20px var(--sys-theme); }
         .terminal-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--sys-theme); transition: all 0.3s ease; }
         .terminal-input:focus { outline: none; border-color: var(--sys-theme); box-shadow: 0 0 15px rgba(0,243,255,0.2); background: rgba(0,0,0,0.8); }
+        select.terminal-input option { background-color: var(--dark-bg); color: var(--sys-theme); }
 
         ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -46,9 +45,9 @@
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
         @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
 
-        /* 卡片效果 */
         .holo-card { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.6)); border: 1px solid rgba(255,255,255,0.05); transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .holo-card::before, .holo-card::after { content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid var(--sys-theme); opacity: 0.3; transition: all 0.4s ease; }
         .holo-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
@@ -113,7 +112,7 @@
     </aside>
 
     <main class="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
-
+        
         <header class="h-20 tech-panel flex items-center justify-between px-8 border-b border-gray-800/50 shrink-0">
             <div class="flex items-center space-x-4">
                 <span class="w-3 h-3 rounded-full animate-pulse shadow-[0_0_15px_var(--sys-theme)]" style="background-color: var(--sys-theme)"></span>
@@ -127,7 +126,7 @@
         <div class="flex-1 overflow-y-auto p-6 relative" id="main-content-area">
 
             <div id="page-dashboard" class="space-y-6 block animate-fade-in-up">
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="tech-panel p-6 rounded-xl overflow-hidden group">
                         <p class="text-gray-400 text-xs mb-1 font-bold tracking-widest uppercase">情报矩阵库容</p>
@@ -246,11 +245,10 @@
 
                 <div id="model-result-card" class="hidden w-full max-w-4xl tech-panel p-8 rounded-xl mt-4 border-t-4" style="border-color: var(--sys-theme)">
                     <h3 class="text-xl font-bold text-white mb-8 flex items-center justify-between">
-                        <span class="tracking-widest">🔮 AI 动态结构化提取报告</span>
+                        <span class="tracking-widest">🔮 AI 动态结构化提取报告 <span class="text-xs font-normal text-gray-500 ml-4 font-tech">>>> CLICK CARDS TO EXPAND DETAILS</span></span>
                         <button onclick="resetAndStartTraining()" class="neon-btn px-5 py-1.5 text-xs font-bold font-tech tracking-wider rounded-lg">RE-RUN</button>
                     </h3>
-                    <div id="dynamic-report-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    </div>
+                    <div id="dynamic-report-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                 </div>
             </div>
 
@@ -272,13 +270,15 @@
                             <button onclick="updateTheme('#00ff66')" class="w-full py-2 rounded text-[10px] font-bold text-black bg-[#00ff66]">MATRIX</button>
                         </div>
                     </div>
+                    
                     <div class="tech-panel p-6 rounded-xl border border-red-900/40 bg-red-950/5 flex flex-col justify-between h-48">
                         <div><h3 class="text-red-500 font-bold mb-2 text-sm tracking-widest">06 // 物理销毁 (PURGE)</h3><p class="text-[10px] text-red-900/60 leading-relaxed">一键清空云端数据库，触发5秒自毁倒计时并强制踢出。</p></div>
                         <button onclick="triggerPurge()" class="w-full py-3 border border-red-500/50 text-red-500 hover:bg-red-600 hover:text-white transition-all font-tech text-xs font-bold tracking-widest rounded-lg">执行销毁指令 (INITIATE)</button>
                     </div>
+                    
                     <div class="tech-panel p-6 rounded-xl border border-green-900/40 bg-green-950/5 flex flex-col justify-between h-48">
-                        <div><h3 class="text-green-500 font-bold mb-2 text-sm tracking-widest">07 // 快照恢复 (RESTORE)</h3><p class="text-[10px] text-green-900/60 leading-relaxed">数据库空载时，从云端镜像还原初始爆料矩阵。</p></div>
-                        <a href="/restore_data" class="w-full py-3 border border-green-500/50 text-green-500 hover:bg-green-600 hover:text-white transition-all font-tech text-xs font-bold tracking-widest rounded-lg text-center block">执行恢复指令 (RESTORE)</a>
+                        <div><h3 class="text-green-500 font-bold mb-2 text-sm tracking-widest">07 // 快照恢复 (RESTORE)</h3><p class="text-[10px] text-green-900/60 leading-relaxed">彻底重置数据库，从云端镜像安全还原初始爆料矩阵。</p></div>
+                        <a href="/restore_data" class="w-full py-3 border border-green-500/50 text-green-500 hover:bg-green-600 hover:text-white transition-all font-tech text-xs font-bold tracking-widest rounded-lg text-center block leading-[1.1rem]">执行恢复指令 (RESTORE)</a>
                     </div>
                 </div>
             </div>
@@ -290,7 +290,7 @@
     <script id="flask-data" type="text/plain">{{ rumors | tojson | safe }}</script>
 
     <script>
-        // --- 0. 系统开机动画与日志渲染 ---
+        // --- 0. 系统开机动画 ---
         const bootLogs = [
             "Bypassing security protocols... [SUCCESS]",
             "Mounting SQLite Matrix Database... [ESTABLISHED]",
@@ -311,29 +311,30 @@
             }, 300);
         } else { document.getElementById('boot-screen').style.display = 'none'; }
 
-        // --- 1. 数据解析：获取后端传来的真实爆料记录 ---
+        // --- 1. 数据解析：【防撞车安全版】 ---
         let rumorData = [];
         try {
             const rawText = document.getElementById('flask-data').textContent.trim();
-            if (rawText && !rawText.includes('{{')) rumorData = JSON.parse(rawText);
-        } catch (e) { console.error("数据解析失败", e); }
+            // 魔法修复：将检查符号拆分，防止 Jinja2 引发 500 崩溃
+            const braceCheck = '{' + '{';
+            if (rawText && !rawText.includes(braceCheck)) {
+                rumorData = JSON.parse(rawText);
+            }
+        } catch (e) { console.error("数据解析失败", e); rumorData = []; }
 
         const totalRecords = rumorData.length;
         if(totalRecords > 0) document.getElementById('ticker-text').innerText = rumorData.map(r => `> [NEW_NODE]: ${r.category} | SRC: ${r.source.toUpperCase()} // `).join('');
 
-        // --- 2. 页面加载后的动态数值计算 ---
+        // --- 2. 页面动态数值 ---
         document.addEventListener('DOMContentLoaded', function() {
-            // 计算安全阈值（纯视觉效果，看起来高大上）
             let calcThreshold = totalRecords === 0 ? 0 : Math.min(99.8, 75.0 + (totalRecords * 2.5));
             document.getElementById('global-threshold').innerText = '>' + calcThreshold.toFixed(1) + '%';
-
-            // 根据数据量改变右上角状态
+            
             const statusEl = document.getElementById('engine-status');
             if (totalRecords === 0) { statusEl.innerText = '休眠 STANDBY'; statusEl.style.color = '#4b5563'; }
             else if (totalRecords <= 5) { statusEl.innerText = '引擎预热 WARM UP'; statusEl.style.color = '#60a5fa'; }
             else { statusEl.innerText = '算力满载 OVERLOAD'; statusEl.style.color = '#ef4444'; statusEl.classList.add('animate-pulse'); }
 
-            // 打字机效果渲染最新的一条新闻
             if (rumorData.length > 0) {
                 const latest = rumorData[0];
                 let i = 0, contentEl = document.getElementById('rumor-content');
@@ -341,16 +342,16 @@
                 let typing = setInterval(() => {
                     if(i < latest.content.length) { contentEl.innerText += latest.content.charAt(i++); } else { clearInterval(typing); }
                 }, 30);
-
+                
                 let baseScore = (85 + (latest.content.length % 15)).toFixed(1);
                 document.getElementById('score-text').innerText = baseScore + '%';
                 setTimeout(() => { document.getElementById('progress-bar').style.width = baseScore + '%'; }, 500);
             }
         });
 
-        // --- 3. 【核心升级】深度演算引擎逻辑：从后端拿数据并支持弹窗浏览 ---
+        // --- 3. 深度演算引擎：向后端请求真实置信度 ---
         let isTrained = false, isTraining = false;
-        window.currentReportData = []; // 全局存储演算结果供弹窗使用
+        window.currentReportData = [];
 
         function switchTab(tab) {
             document.querySelectorAll('main > div > div[id^="page-"]').forEach(el => el.classList.add('hidden'));
@@ -370,7 +371,7 @@
             const term = document.getElementById('terminal-output'), spin = document.getElementById('model-spinner');
             term.innerHTML = ''; document.getElementById('model-result-card').classList.add('hidden');
             spin.classList.add('animate-spin');
-
+            
             document.getElementById('model-status-text').innerText = "EXECUTING DEEP LEARNING PROTOCOLS...";
             document.getElementById('model-title').innerText = "AI 计算引擎正在解构爆料特征";
 
@@ -379,20 +380,19 @@
                 "> FILTERING NOISE DATA...", "> CALCULATING SOURCE WEIGHTS...",
                 "> KEYWORD: [A20_CHIP] [2NM] [SOLID_BUTTONS]", "> ACCURACY: 98.4%", "> COMPILING REPORT..."
             ];
-
+            
             let i = 0, interval = setInterval(() => {
-                if (i < logs.length) { term.innerHTML += `<p class="animate-fade-in-up text-cyan-400">${logs[i++]}</p>`; term.scrollTop = term.scrollHeight; }
+                if (i < logs.length) { term.innerHTML += `<p class="animate-fade-in-up text-cyan-400">${logs[i++]}</p>`; term.scrollTop = term.scrollHeight; } 
                 else {
                     clearInterval(interval);
-                    // 请求后端真实的演算接口！
                     fetch('/api/calculate_model')
                         .then(res => res.json())
                         .then(data => {
                             isTraining = false; isTrained = true; spin.classList.remove('animate-spin');
                             document.getElementById('model-title').innerText = "iPhone 18 Pro Max 解构报告生成完毕";
                             document.getElementById('model-status-text').innerText = "CALCULATION COMPLETE [100%]";
-
-                            window.currentReportData = data.data; // 存入全局变量
+                            
+                            window.currentReportData = data.data; 
                             const container = document.getElementById('dynamic-report-grid');
                             container.innerHTML = '';
                             if(!data.data || data.data.length === 0) { container.innerHTML = '<p class="text-gray-600 italic">矩阵为空，无法生成报告</p>'; }
@@ -422,7 +422,7 @@
             }, 400);
         }
 
-        // --- 4. 弹窗控制：展示某个大类的全部明细 ---
+        // --- 4. 弹窗控制 ---
         function showCategoryDetails(categoryName) {
             const cat = window.currentReportData.find(d => d.category === categoryName);
             if(!cat) return;
@@ -442,13 +442,13 @@
         function closeModal() { document.getElementById('details-modal').classList.add('hidden'); }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
 
-        // --- 5. 设定逻辑：视觉能量场调节 ---
+        // --- 5. 视觉设定 ---
         function updateGlow(val) { document.getElementById('glow-label').innerText = '当前：' + val + 'px'; document.documentElement.style.setProperty('--glow-spread', val + 'px'); }
         function updateTheme(color) { document.documentElement.style.setProperty('--sys-theme', color); }
-
-        // --- 6. 【核心升级】物理销毁指令：带5秒倒计时和自动注销 ---
+        
+        // --- 6. 物理销毁核心指令：5秒倒计时 + 强制踢出登录 ---
         function triggerPurge() {
-            if(confirm("❗ 警告：确定执行最高等级物理销毁协议吗？\\n警告：所有云端数据库记录将被瞬间抹除！")) {
+            if(confirm("❗ 警告：确定执行最高等级物理销毁协议吗？\n警告：所有云端数据库记录将被瞬间抹除！")) {
                 fetch('/api/purge_all', { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
@@ -468,6 +468,8 @@
                                 if(count > 0) document.getElementById('countdown-text').innerText = 'TERMINATING CONNECTION IN ' + count + '...';
                                 else { clearInterval(timer); window.location.href = '/logout'; }
                             }, 1000);
+                        } else {
+                            alert("销毁失败，系统报错: " + data.msg);
                         }
                     });
             }
