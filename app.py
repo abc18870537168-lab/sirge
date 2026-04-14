@@ -8,27 +8,24 @@ app.secret_key = 'apple_rumor_super_secret_key'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'apple_rumor.db')
 
-
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
 
-
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = dict_factory
-    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA foreign_keys = ON") 
     return conn
-
 
 def init_system_data():
     try:
         connection = get_db_connection()
         with connection:
             cursor = connection.cursor()
-
+            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     user_id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -39,7 +36,7 @@ def init_system_data():
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-
+            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS rumors (
                     rumor_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +48,7 @@ def init_system_data():
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-
+            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS predictions (
                     prediction_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,51 +62,37 @@ def init_system_data():
                     UNIQUE (user_id, rumor_id)
                 )
             """)
-
-            # --- 智能注入初始数据 ---
+            
             cursor.execute("SELECT user_id FROM users LIMIT 2")
             users = cursor.fetchall()
             if len(users) < 2:
-                cursor.execute(
-                    "INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家A', '123', 'admin')")
-                cursor.execute(
-                    "INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家B', '123', 'user')")
+                cursor.execute("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家A', '123', 'admin')")
+                cursor.execute("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('演示专家B', '123', 'user')")
                 cursor.execute("SELECT user_id FROM users LIMIT 2")
                 users = cursor.fetchall()
-
+            
             u1, u2 = users[0]['user_id'], users[1]['user_id'] if len(users) > 1 else users[0]['user_id']
 
             cursor.execute("SELECT COUNT(*) as cnt FROM rumors")
             if cursor.fetchone()['cnt'] == 0:
-                cursor.execute("DELETE FROM sqlite_sequence WHERE name='rumors'")
-                cursor.execute("DELETE FROM sqlite_sequence WHERE name='predictions'")
+                # 【防弹加固】防止新数据库没有序列导致报错
+                try:
+                    cursor.execute("DELETE FROM sqlite_sequence WHERE name='rumors'")
+                    cursor.execute("DELETE FROM sqlite_sequence WHERE name='predictions'")
+                except:
+                    pass
+                
+                cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('处理器', '全系标配台积电 2nm 工艺的 A20 芯片，性能提升巨大', '郭明錤')")
+                cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('屏幕外观', '18 Pro Max 将彻底取消实体按键，采用全固态压感设计', '彭博社')")
+                cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('拍照摄像', '主摄升级为全新可变光圈，夜景能力史诗级提升', '数码闲聊站')")
+                cursor.execute("INSERT INTO rumors (category, content, source) VALUES ('电池续航', '将采用全新高密度电池技术，支持更快的超级快充', 'MacRumors')")
 
-                # 【修改点】换成了纯正的 iPhone 18 Pro Max 爆料和接地气的分类！
-                cursor.execute(
-                    "INSERT INTO rumors (category, content, source) VALUES ('处理器', '全系标配台积电 2nm 工艺的 A20 芯片，性能提升巨大', '郭明錤')")
-                cursor.execute(
-                    "INSERT INTO rumors (category, content, source) VALUES ('屏幕外观', '18 Pro Max 将彻底取消实体按键，采用全固态压感设计', '彭博社')")
-                cursor.execute(
-                    "INSERT INTO rumors (category, content, source) VALUES ('拍照摄像', '主摄升级为全新可变光圈，夜景能力史诗级提升', '数码闲聊站')")
-                cursor.execute(
-                    "INSERT INTO rumors (category, content, source) VALUES ('电池续航', '将采用全新高密度电池技术，支持更快的超级快充', 'MacRumors')")
-
-                cursor.execute(
-                    "INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 4)",
-                    (u1,))
-                cursor.execute(
-                    "INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 10)",
-                    (u2,))
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 4)", (u1,))
+                cursor.execute("INSERT INTO predictions (user_id, rumor_id, vote_type, confidence_level) VALUES (?, 1, 1, 10)", (u2,))
     except Exception as e:
         print(f"系统初始化失败啦: {e}")
 
-
 init_system_data()
-
-
-# ==========================================
-# 高级后台业务接口
-# ==========================================
 
 @app.route('/api/receive_spider_data', methods=['POST'])
 def receive_spider_data():
@@ -131,16 +114,11 @@ def receive_spider_data():
                 if cursor.fetchone():
                     duplicate_count += 1
                     continue
-                cursor.execute("INSERT INTO rumors (category, content, source) VALUES (?, ?, ?)",
-                               (category, title, source))
+                cursor.execute("INSERT INTO rumors (category, content, source) VALUES (?, ?, ?)", (category, title, source))
                 success_count += 1
-        if success_count > 0:
-            return jsonify({"code": 200, "msg": f"成功抓取并写入 {success_count} 条苹果18新爆料！"})
-        else:
-            return jsonify({"code": 200, "msg": f"目前没有最新爆料，拦截了重复的 {duplicate_count} 条数据。"})
-    except Exception as e:
-        return jsonify({"code": 500})
-
+        if success_count > 0: return jsonify({"code": 200, "msg": f"成功抓取并写入 {success_count} 条苹果18新爆料！"})
+        else: return jsonify({"code": 200, "msg": f"目前没有最新爆料，拦截了重复的 {duplicate_count} 条数据。"})
+    except Exception as e: return jsonify({"code": 500})
 
 @app.route('/api/purge_all', methods=['POST'])
 def purge_all():
@@ -154,7 +132,6 @@ def purge_all():
     except Exception as e:
         return jsonify({"code": 500, "msg": str(e)})
 
-
 @app.route('/api/calculate_model', methods=['GET'])
 def calculate_model():
     if 'username' not in session: return jsonify({"code": 403})
@@ -165,45 +142,38 @@ def calculate_model():
         rumors = cursor.fetchall()
         report_data = []
         categories = set(r['category'] for r in rumors)
-
+        
         for cat in categories:
             cat_rumors = [r for r in rumors if r['category'] == cat]
             node_count = len(cat_rumors)
-            latest_content = cat_rumors[-1]['content']
-
-            trust_score = 50.0
-            # 【修改点】匹配最新的大白话关键词
+            latest_content = cat_rumors[-1]['content'] 
+            
+            trust_score = 50.0 
             authoritative_sources = ['彭博社', '郭明錤', 'MacRumors', '数码闲聊站', '快科技', 'IT之家']
             core_keywords = ['2nm', '固态按键', '快充', '光圈', 'A20', '首发', '涨价']
-
+            
             for r in cat_rumors:
                 if any(s in (r['source'] or '') for s in authoritative_sources): trust_score += 15.0
                 if any(k in r['content'] for k in core_keywords): trust_score += 8.0
-                cursor.execute("SELECT AVG(confidence_level) as avg_conf FROM predictions WHERE rumor_id = ?",
-                               (r['rumor_id'],))
+                cursor.execute("SELECT AVG(confidence_level) as avg_conf FROM predictions WHERE rumor_id = ?", (r['rumor_id'],))
                 pred = cursor.fetchone()
                 if pred and pred['avg_conf']: trust_score += (pred['avg_conf'] * 2.0)
-
+            
             trust_score = min(99.8, trust_score + (node_count * 2.0))
-
+            
             report_data.append({
                 "category": cat,
                 "node_count": node_count,
                 "latest_content": latest_content,
                 "confidence": round(trust_score, 1),
-                "details": cat_rumors
+                "details": cat_rumors 
             })
-
+            
         return jsonify({"code": 200, "data": report_data})
     except Exception as e:
         return jsonify({"code": 500, "msg": str(e)})
     finally:
         if 'connection' in locals() and connection: connection.close()
-
-
-# ==========================================
-# 网页路由部分
-# ==========================================
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -223,7 +193,6 @@ def login():
             if 'connection' in locals() and connection: connection.close()
     return render_template('login.html')
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -241,7 +210,6 @@ def register():
             if 'connection' in locals() and connection: connection.close()
     return render_template('register.html')
 
-
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session: return redirect(url_for('login'))
@@ -253,7 +221,6 @@ def dashboard():
     finally:
         if 'connection' in locals() and connection: connection.close()
     return render_template('dashboard.html', username=session['username'], rumors=all_rumors)
-
 
 @app.route('/add_rumor', methods=['POST'])
 def add_rumor():
@@ -268,7 +235,6 @@ def add_rumor():
         if 'connection' in locals() and connection: connection.close()
     return redirect(url_for('dashboard'))
 
-
 @app.route('/delete_rumor/<int:rumor_id>')
 def delete_rumor(rumor_id):
     if 'username' not in session: return redirect(url_for('login'))
@@ -281,7 +247,6 @@ def delete_rumor(rumor_id):
         if 'connection' in locals() and connection: connection.close()
     return redirect(url_for('dashboard'))
 
-
 @app.route('/restore_data')
 def restore_data():
     if 'username' not in session: return redirect(url_for('login'))
@@ -293,16 +258,14 @@ def restore_data():
             cursor.execute("DROP TABLE IF EXISTS rumors")
     except:
         pass
-
-    init_system_data()
+    
+    init_system_data() 
     return redirect(url_for('dashboard'))
-
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
