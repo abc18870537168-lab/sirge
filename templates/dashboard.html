@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* 变量设置 */
         :root {
             --sys-theme: #00f3ff;
             --dark-bg: #030710;
@@ -26,7 +25,6 @@
 
         .font-tech { font-family: 'Orbitron', sans-serif; }
 
-        /* 发光面板 */
         .tech-panel { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 var(--glow-spread) rgba(var(--sys-theme), 0.3), inset 0 0 calc(var(--glow-spread)/2) rgba(var(--sys-theme), 0.2); position: relative; transition: all 0.3s ease; }
         .tech-panel::before, .tech-panel::after { content: ''; position: absolute; width: 10px; height: 10px; border: 2px solid var(--sys-theme); transition: border-color 0.5s;}
@@ -51,7 +49,7 @@
         /* 销毁乱码动画 */
         @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
 
-        .holo-card { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.6)); border: 1px solid rgba(255,255,255,0.05); transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .holo-card { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.6)); border: 1px solid rgba(255,255,255,0.05); transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .holo-card::before, .holo-card::after { content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid var(--sys-theme); opacity: 0.3; transition: all 0.4s ease; }
         .holo-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
         .holo-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
@@ -85,6 +83,17 @@
                 </div>
             </div>
             <div id="boot-logs" class="h-48 overflow-hidden text-green-400"></div>
+        </div>
+    </div>
+
+    <div id="details-modal" class="fixed inset-0 z-[999999] hidden bg-black/80 backdrop-blur-sm flex items-center justify-center">
+        <div class="tech-panel w-full max-w-2xl max-h-[80vh] rounded-xl flex flex-col shadow-[0_0_30px_rgba(0,243,255,0.2)] animate-fade-in-up">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center">
+                <h3 id="modal-title" class="text-white font-bold tracking-widest text-lg" style="color: var(--sys-theme)"></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-3xl font-tech transition-colors">&times;</button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto custom-scrollbar space-y-4 flex-1">
+                </div>
         </div>
     </div>
 
@@ -224,7 +233,7 @@
                             </div>
                             {% else %}
                                 {% for r in rumors %}
-                                <div class="rumor-card holo-card p-5 rounded-xl flex flex-col group h-[200px] shadow-lg">
+                                <div class="rumor-card holo-card p-5 rounded-xl flex flex-col group h-[200px] shadow-lg cursor-default">
                                     <div class="flex justify-between items-start mb-4 border-b border-white/5 pb-3">
                                         <div class="flex items-center space-x-2">
                                             <span class="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_8px_#fff]"></span>
@@ -274,7 +283,7 @@
 
                 <div id="model-result-card" class="hidden w-full max-w-4xl tech-panel p-8 rounded-xl mt-8 border-t-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]" style="border-color: var(--sys-theme)">
                     <h3 class="text-xl font-bold text-white mb-8 flex items-center justify-between border-b border-gray-800 pb-4">
-                        <span class="flex items-center tracking-widest"><span class="text-2xl mr-3">🔮</span> AI 动态结构化提取报告</span>
+                        <span class="flex items-center tracking-widest"><span class="text-2xl mr-3">🔮</span> AI 动态结构化提取报告 <span class="text-xs font-normal text-gray-500 ml-4 font-tech">>>> CLICK CARDS TO EXPAND DETAILS</span></span>
                         <button onclick="resetAndStartTraining()" class="neon-btn px-5 py-1.5 text-xs font-bold font-tech tracking-wider rounded-lg shadow-lg">RE-RUN</button>
                     </h3>
                     <div id="dynamic-report-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -495,6 +504,9 @@
         });
 
         let isTrained = false, isTraining = false;
+        // 把后端的演算结果存到全局变量里，方便弹窗调用
+        window.currentReportData = []; 
+
         const logs = [
             "> INITIALIZING DEEP NEURAL LINK... [OK]",
             "> PARSING GLOBAL MATRIX NODES... COUNT: " + totalRecords,
@@ -520,7 +532,6 @@
             if(tab === 'model') startTrainingSimulation();
         }
 
-        // 【真】演算请求：不再是前端写死了，而是真的去请求 python 后端算法
         function startTrainingSimulation() {
             if (isTrained || isTraining) return;
             isTraining = true;
@@ -540,7 +551,7 @@
                 } else {
                     clearInterval(interval);
                     
-                    // 动画跑完后，向后端请求真正的分析结果！
+                    // 向后端请求真正的分析结果！
                     fetch('/api/calculate_model')
                         .then(response => response.json())
                         .then(data => {
@@ -551,23 +562,27 @@
                             document.getElementById('model-status-text').style.color = "#fff";
                             document.getElementById('model-title').innerText = "苹果18pro max 结构化报告生成完毕";
 
-                            // 把后端的真实结果渲染出来
+                            // 保存数据，用于弹窗
+                            window.currentReportData = data.data; 
+
                             const container = document.getElementById('dynamic-report-grid');
                             container.innerHTML = '';
                             if(data.data && data.data.length > 0) {
                                 data.data.forEach(item => {
+                                    // 注意这里加了 onclick，点击整个卡片都会触发弹窗
                                     container.innerHTML += `
-                                        <div class="bg-black/50 p-6 rounded-xl border border-gray-800/80 hover:border-white transition-all duration-400 shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] group">
-                                            <p class="text-gray-500 text-xs mb-3 font-bold flex justify-between items-center border-b border-white/5 pb-2">
+                                        <div onclick="showCategoryDetails('${item.category}')" class="bg-black/50 p-6 rounded-xl border border-gray-800/80 hover:border-white transition-all duration-400 shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] group cursor-pointer relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                            <p class="text-gray-500 text-xs mb-3 font-bold flex justify-between items-center border-b border-white/5 pb-2 relative z-10">
                                                 <span class="tracking-widest uppercase text-white drop-shadow-md">DIMENSION: ${item.category}</span>
-                                                <span class="font-tech text-[9px] text-gray-600 border border-gray-700 px-1 rounded">NODES: ${item.node_count}</span>
+                                                <span class="font-tech text-[9px] text-gray-600 border border-gray-700 px-1 rounded bg-black/50">NODES: ${item.node_count}</span>
                                             </p>
-                                            <p class="text-gray-300 font-medium text-sm leading-relaxed mb-6 group-hover:text-white transition-colors">${item.latest_content}</p>
-                                            <div class="flex justify-between items-end text-[10px] font-tech text-gray-500 mb-1.5 px-1">
+                                            <p class="text-gray-300 font-medium text-sm leading-relaxed mb-6 group-hover:text-white transition-colors relative z-10">${item.latest_content}</p>
+                                            <div class="flex justify-between items-end text-[10px] font-tech text-gray-500 mb-1.5 px-1 relative z-10">
                                                 <span>AI 置信度 (CONFIDENCE):</span>
                                                 <span class="font-bold text-base leading-none" style="color: var(--sys-theme)">${item.confidence}%</span>
                                             </div>
-                                            <div class="w-full bg-black/60 border border-gray-800 h-2 rounded-full overflow-hidden shadow-inner">
+                                            <div class="w-full bg-black/60 border border-gray-800 h-2 rounded-full overflow-hidden shadow-inner relative z-10">
                                                 <div class="h-full rounded-full" style="width: ${item.confidence}%; background: linear-gradient(90deg, transparent, var(--sys-theme)); box-shadow: 0 0 10px var(--sys-theme);"></div>
                                             </div>
                                         </div>
@@ -584,6 +599,36 @@
             }, 350);
         }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
+
+        // --- 打开极客弹窗展示明细的函数 ---
+        function showCategoryDetails(categoryName) {
+            const categoryData = window.currentReportData.find(d => d.category === categoryName);
+            if(!categoryData) return;
+
+            document.getElementById('modal-title').innerText = '详细情报解构: ' + categoryName;
+            const contentDiv = document.getElementById('modal-content');
+            contentDiv.innerHTML = '';
+
+            // 循环生成这个大类里的所有具体新闻
+            categoryData.details.forEach(item => {
+                contentDiv.innerHTML += `
+                    <div class="bg-black/40 border border-gray-800 p-4 rounded-lg hover:border-sys-theme transition-colors group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[10px] text-white font-tech bg-white/10 px-2 py-0.5 rounded tracking-widest border border-white/20">NODE#${item.rumor_id}</span>
+                            <span class="text-[10px] font-bold tracking-widest" style="color: var(--sys-theme)">SRC: ${item.source}</span>
+                        </div>
+                        <p class="text-sm text-gray-200 leading-relaxed font-medium">${item.content}</p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('details-modal').classList.remove('hidden');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('details-modal').classList.add('hidden');
+        }
 
         function updateGlow(val) {
             document.getElementById('glow-label').innerText = '当前强度：' + val + 'px';
@@ -622,24 +667,40 @@
             updateGlow(glowVal);
         }
 
-        // 【真】删库跑路：请求后端的清空接口
+        // 【核弹级修复】：加入了 5 秒倒计时和自动注销踢出系统功能
         function triggerPurge() {
             if(confirm("CRITICAL WARNING: 确定要执行最高级别物理销毁协议吗？\n警告：系统缓存的矩阵数据将被瞬间熔断抹除！")) {
                 
-                // 去跟云端打招呼，让它删库！
                 fetch('/api/purge_all', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
                         if(data.code === 200) {
                             const mainArea = document.getElementById('main-content-area');
+                            
+                            // 显示红色警告页面，并加入倒计时 UI
                             mainArea.innerHTML = `
                                 <div class="h-full w-full bg-red-950/40 flex flex-col items-center justify-center animate-[glitch_0.2s_infinite]">
                                     <h1 class="text-red-500 font-tech text-6xl md:text-8xl mb-4 tracking-[0.2em] font-black drop-shadow-[0_0_30px_rgba(239,68,68,1)]">SYSTEM PURGED</h1>
                                     <p class="text-red-400 font-tech text-lg md:text-2xl tracking-[0.3em] uppercase">All Local Data Matrices Have Been Securely Erased.</p>
                                     <div class="w-32 h-1 bg-red-500 mt-8 animate-pulse shadow-[0_0_15px_#ef4444]"></div>
-                                    <p class="text-gray-500 font-tech text-sm mt-8 tracking-widest">CONNECTION_SEVERED // FATAL_ERROR_0x99A</p>
+                                    <p id="countdown-text" class="text-white font-tech text-xl mt-8 tracking-widest bg-red-600 px-4 py-1 rounded">TERMINATING CONNECTION IN 5...</p>
                                 </div>
                             `;
+
+                            // 执行 5 秒倒计时
+                            let countdown = 5;
+                            const countdownText = document.getElementById('countdown-text');
+                            const timerInterval = setInterval(() => {
+                                countdown--;
+                                if(countdown > 0) {
+                                    countdownText.innerText = 'TERMINATING CONNECTION IN ' + countdown + '...';
+                                } else {
+                                    clearInterval(timerInterval);
+                                    // 倒计时结束，跳转到登出接口，彻底清空 session 并回到登录页
+                                    window.location.href = '/logout';
+                                }
+                            }, 1000);
+
                         } else {
                             alert("销毁失败，系统防御阻止了该指令！");
                         }
