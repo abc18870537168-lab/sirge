@@ -7,68 +7,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --sys-theme: #00f3ff;
-            --dark-bg: #030710;
-            --panel-bg: rgba(7, 12, 23, 0.75);
-            --glow-spread: 15px;
-        }
-
-        body { font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg);
-            background-image:
-                radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.05), transparent 25%),
-                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-            color: #e2e8f0; transition: background-color 0.5s; overflow: hidden; }
-
+        :root { --sys-theme: #00f3ff; --dark-bg: #030710; --panel-bg: rgba(7, 12, 23, 0.75); --glow-spread: 15px; }
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: var(--dark-bg); background-image: radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.05), transparent 25%), radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.05), transparent 25%), linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px; color: #e2e8f0; transition: background-color 0.5s; overflow: hidden; }
         .font-tech { font-family: 'Orbitron', sans-serif; }
-
-        .tech-panel { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 var(--glow-spread) rgba(var(--sys-theme), 0.3), inset 0 0 calc(var(--glow-spread)/2) rgba(var(--sys-theme), 0.2); position: relative; transition: all 0.3s ease; }
+        .tech-panel { background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 var(--glow-spread) rgba(var(--sys-theme), 0.3), inset 0 0 calc(var(--glow-spread)/2) rgba(var(--sys-theme), 0.2); position: relative; transition: all 0.3s ease; }
         .tech-panel::before, .tech-panel::after { content: ''; position: absolute; width: 10px; height: 10px; border: 2px solid var(--sys-theme); transition: border-color 0.5s;}
         .tech-panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
         .tech-panel::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-
         .neon-btn { background: linear-gradient(45deg, transparent 5%, var(--sys-theme) 5%); background-size: 200%; background-position: left; border: 1px solid var(--sys-theme); color: var(--sys-theme); box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset; transition: all 0.3s; }
         .neon-btn:hover { background-position: right; background-color: var(--sys-theme); color: #000; box-shadow: 0 0 20px var(--sys-theme); }
         .terminal-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--sys-theme); transition: all 0.3s ease; }
         .terminal-input:focus { outline: none; border-color: var(--sys-theme); box-shadow: 0 0 15px rgba(0,243,255,0.2); background: rgba(0,0,0,0.8); }
-
         ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--sys-theme); border-radius: 3px; opacity: 0.3; }
-
         .nav-active { background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent); color: var(--sys-theme) !important; border-left: 4px solid var(--sys-theme) !important; box-shadow: inset 10px 0 20px rgba(0,0,0,0.3); }
-
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-        
-        /* 销毁乱码动画 */
         @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
-
         .holo-card { position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.6)); border: 1px solid rgba(255,255,255,0.05); transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .holo-card::before, .holo-card::after { content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid var(--sys-theme); opacity: 0.3; transition: all 0.4s ease; }
         .holo-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
         .holo-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-
         .holo-card:hover { border-color: rgba(var(--sys-theme), 0.5); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 243, 255, 0.1); background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.8)); transform: perspective(1000px) translateY(-8px) rotateX(4deg) rotateY(-2deg) scale(1.02); z-index: 10; }
         .holo-card:hover::before, .holo-card:hover::after { width: 30px; height: 30px; opacity: 1; box-shadow: 0 0 15px var(--sys-theme); }
-
         .radar-box { position: relative; width: 60px; height: 60px; border-radius: 50%; border: 1px solid rgba(var(--sys-theme), 0.3); background: rgba(0,243,255,0.05); overflow: hidden; box-shadow: 0 0 15px rgba(0,243,255,0.1); }
         .radar-box::before { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 70%, var(--sys-theme) 100%); animation: radar-spin 2s linear infinite; }
         .radar-box::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, transparent 40%, rgba(0,243,255,0.1) 41%, transparent 42%, transparent 70%, rgba(0,243,255,0.2) 71%, transparent 72%); }
         @keyframes radar-spin { 100% { transform: rotate(360deg); } }
         .radar-dot { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; box-shadow: 0 0 8px #fff; animation: blink 2s infinite; }
-
         .ticker-wrap { position: fixed; bottom: 0; left: 0; width: 100%; height: 22px; background: rgba(0,0,0,0.8); border-top: 1px solid rgba(255,255,255,0.1); z-index: 50; overflow: hidden; display: flex; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
         .ticker-move { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 25s linear infinite; font-size: 10px; font-family: 'Orbitron', monospace; color: var(--sys-theme); opacity: 0.8; letter-spacing: 2px; }
         @keyframes ticker { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-
         #boot-screen { position: fixed; inset: 0; z-index: 99999; background: #010409; display: flex; flex-direction: column; justify-content: center; padding: 40px; color: var(--sys-theme); transition: opacity 0.5s ease; }
         .boot-line { font-family: 'Orbitron', monospace; font-size: 12px; margin-bottom: 8px; opacity: 0; }
+        
+        /* 下拉菜单的美化 */
+        select.terminal-input option { background-color: var(--dark-bg); color: var(--sys-theme); }
     </style>
 </head>
 <body class="h-screen flex pb-[22px]">
@@ -93,7 +69,7 @@
                 <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-3xl font-tech transition-colors">&times;</button>
             </div>
             <div id="modal-content" class="p-6 overflow-y-auto custom-scrollbar space-y-4 flex-1">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -154,11 +130,9 @@
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 h-[550px]">
-
                     <div class="xl:col-span-1 space-y-6 flex flex-col h-full">
                         <div class="tech-panel p-6 rounded-xl relative overflow-hidden group shrink-0">
                             <div class="absolute inset-0 opacity-10 pointer-events-none animate-[scan_3s_ease-in-out_infinite]" style="background: linear-gradient(to bottom, transparent, var(--sys-theme), transparent);"></div>
-
                             <div class="flex justify-between items-start mb-4 border-b border-gray-800/80 pb-4 relative z-10">
                                 <div>
                                     <h2 class="text-sm font-bold text-white tracking-widest border-l-4 pl-2" style="border-color: var(--sys-theme)">NLP 语义解析节点</h2>
@@ -170,15 +144,12 @@
                                     <div class="radar-dot" style="top: 40%; left: 80%; animation-delay: 1.2s"></div>
                                 </div>
                             </div>
-
                             <div class="relative z-10">
                                 <div class="flex items-center space-x-2 mb-3">
                                     <span class="text-[9px] bg-white/10 text-white px-2 py-0.5 rounded border border-white/20 tracking-wider">最新截获</span>
                                     <span id="latest-source" class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--sys-theme)">信源: --</span>
                                 </div>
-                                <p id="rumor-content" class="text-sm font-medium text-gray-300 mb-6 min-h-[45px] leading-relaxed bg-black/30 p-3 rounded border border-white/5 shadow-inner">
-                                    [ 等待核心数据流唤醒... ]
-                                </p>
+                                <p id="rumor-content" class="text-sm font-medium text-gray-300 mb-6 min-h-[45px] leading-relaxed bg-black/30 p-3 rounded border border-white/5 shadow-inner">[ 等待核心数据流唤醒... ]</p>
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-end text-xs font-bold" style="color: var(--sys-theme)">
                                         <span>特征匹配度 <span class="font-tech text-[9px] text-gray-500 ml-1">MATCH</span></span>
@@ -200,8 +171,16 @@
                             <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-white pl-2 mb-5 relative z-10">极客注入终端 <span class="font-tech text-[10px] text-gray-500 ml-2">MANUAL_INSERT</span></h2>
                             <form action="/add_rumor" method="POST" class="space-y-4 relative z-10">
                                 <div class="flex gap-3">
-                                    <input type="text" name="category" placeholder="分类 (如:屏幕)" required class="w-1/2 terminal-input p-3 text-xs rounded-lg">
-                                    <input type="text" name="source" placeholder="信源 (如:彭博)" required class="w-1/2 terminal-input p-3 text-xs rounded-lg">
+                                    <select name="category" required class="w-1/2 terminal-input p-3 text-xs rounded-lg cursor-pointer">
+                                        <option value="" disabled selected>选择情报分类...</option>
+                                        <option value="核心算力 (SOC)">核心算力 (SOC)</option>
+                                        <option value="光学影像 (CAMERA)">光学影像 (CAMERA)</option>
+                                        <option value="视觉面板 (DISPLAY)">视觉面板 (DISPLAY)</option>
+                                        <option value="机身架构 (DESIGN)">机身架构 (DESIGN)</option>
+                                        <option value="能源系统 (BATTERY)">能源系统 (BATTERY)</option>
+                                        <option value="前沿生态 (ECOSYSTEM)">前沿生态 (ECOSYSTEM)</option>
+                                    </select>
+                                    <input type="text" name="source" placeholder="信源 (如:彭博社)" required autocomplete="off" class="w-1/2 terminal-input p-3 text-xs rounded-lg">
                                 </div>
                                 <textarea name="content" rows="3" placeholder=">> 手动键入情报源数据流..." required class="w-full terminal-input p-3 text-xs rounded-lg resize-none"></textarea>
                                 <button type="submit" class="w-full neon-btn py-3 text-xs font-bold tracking-[0.2em] rounded-lg shadow-lg hover:shadow-xl transition-all">执行注入矩阵</button>
@@ -211,7 +190,6 @@
 
                     <div class="xl:col-span-2 tech-panel p-6 rounded-xl flex flex-col h-full relative overflow-hidden">
                         <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: radial-gradient(var(--sys-theme) 1px, transparent 1px); background-size: 24px 24px;"></div>
-
                         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800/80 relative z-10 shrink-0">
                             <div class="flex items-center space-x-3">
                                 <h2 class="text-base font-bold text-white tracking-widest border-l-4 pl-3" style="border-color: var(--sys-theme)">全息情报视界</h2>
@@ -293,7 +271,6 @@
 
             <div id="page-settings" class="hidden space-y-6">
                 <h2 class="text-xl font-bold text-white tracking-widest border-l-4 pl-3" style="border-color: var(--sys-theme)">系统全局协议重载</h2>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between">
                         <div>
@@ -305,7 +282,6 @@
                             <input type="range" id="glow-slider" min="0" max="40" value="15" class="w-full" oninput="updateGlow(this.value)">
                         </div>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">02 // 核心光谱重置 (THEME)</h3>
@@ -318,7 +294,6 @@
                             <button onclick="updateTheme('#a855f7')" class="w-full py-2 rounded-lg text-[10px] font-tech font-bold text-white shadow-[0_0_10px_rgba(168,85,247,0.4)] hover:scale-105 transition-transform" style="background-color: #a855f7">PURPLE</button>
                         </div>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">03 // 防投毒清洗探针 (FILTER)</h3>
@@ -332,7 +307,6 @@
                             </label>
                         </div>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">04 // 信源匿名脱敏 (ANONYMITY)</h3>
@@ -346,7 +320,6 @@
                             </label>
                         </div>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between">
                         <div>
                             <h3 class="text-white font-bold mb-4 text-sm tracking-widest border-b border-gray-800 pb-2">05 // 神经网络深度 (DEPTH)</h3>
@@ -357,7 +330,6 @@
                             <input type="range" id="depth-slider" min="16" max="256" step="16" value="64" class="w-full" oninput="updateDepth(this.value)">
                         </div>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl border border-red-900/50 flex flex-col justify-between relative overflow-hidden group">
                         <div class="absolute right-0 bottom-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl -mr-6 -mb-6 group-hover:bg-red-500/20 transition-colors"></div>
                         <div class="relative z-10">
@@ -368,7 +340,6 @@
                             执行销毁指令 (INITIATE)
                         </button>
                     </div>
-
                     <div class="tech-panel p-6 rounded-xl border border-green-900/50 flex flex-col justify-between relative overflow-hidden group">
                         <div class="absolute right-0 bottom-0 w-24 h-24 bg-green-500/10 rounded-full blur-2xl -mr-6 -mb-6 group-hover:bg-green-500/20 transition-colors"></div>
                         <div class="relative z-10">
@@ -379,7 +350,6 @@
                             执行恢复指令 (RESTORE)
                         </a>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -432,11 +402,8 @@
         let rumorData = [];
         try {
             const rawText = document.getElementById('flask-data').textContent.trim();
-            const braceCheck = '{' + '{';
-            if (rawText && !rawText.includes(braceCheck)) {
+            if (rawText && !rawText.includes('{' + '{')) {
                 rumorData = JSON.parse(rawText);
-            } else {
-                throw new Error("Local Preview Fallback");
             }
         } catch (e) {
             rumorData = [];
@@ -504,7 +471,6 @@
         });
 
         let isTrained = false, isTraining = false;
-        // 把后端的演算结果存到全局变量里，方便弹窗调用
         window.currentReportData = []; 
 
         const logs = [
@@ -550,8 +516,6 @@
                     term.scrollTop = term.scrollHeight;
                 } else {
                     clearInterval(interval);
-                    
-                    // 向后端请求真正的分析结果！
                     fetch('/api/calculate_model')
                         .then(response => response.json())
                         .then(data => {
@@ -562,14 +526,12 @@
                             document.getElementById('model-status-text').style.color = "#fff";
                             document.getElementById('model-title').innerText = "苹果18pro max 结构化报告生成完毕";
 
-                            // 保存数据，用于弹窗
                             window.currentReportData = data.data; 
 
                             const container = document.getElementById('dynamic-report-grid');
                             container.innerHTML = '';
                             if(data.data && data.data.length > 0) {
                                 data.data.forEach(item => {
-                                    // 注意这里加了 onclick，点击整个卡片都会触发弹窗
                                     container.innerHTML += `
                                         <div onclick="showCategoryDetails('${item.category}')" class="bg-black/50 p-6 rounded-xl border border-gray-800/80 hover:border-white transition-all duration-400 shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] group cursor-pointer relative overflow-hidden">
                                             <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
@@ -600,16 +562,12 @@
         }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
 
-        // --- 打开极客弹窗展示明细的函数 ---
         function showCategoryDetails(categoryName) {
             const categoryData = window.currentReportData.find(d => d.category === categoryName);
             if(!categoryData) return;
-
             document.getElementById('modal-title').innerText = '详细情报解构: ' + categoryName;
             const contentDiv = document.getElementById('modal-content');
             contentDiv.innerHTML = '';
-
-            // 循环生成这个大类里的所有具体新闻
             categoryData.details.forEach(item => {
                 contentDiv.innerHTML += `
                     <div class="bg-black/40 border border-gray-800 p-4 rounded-lg hover:border-sys-theme transition-colors group">
@@ -621,63 +579,26 @@
                     </div>
                 `;
             });
-
             document.getElementById('details-modal').classList.remove('hidden');
         }
 
-        // 关闭弹窗
         function closeModal() {
             document.getElementById('details-modal').classList.add('hidden');
         }
 
-        function updateGlow(val) {
-            document.getElementById('glow-label').innerText = '当前强度：' + val + 'px';
-            document.documentElement.style.setProperty('--glow-spread', val + 'px');
-        }
+        function updateGlow(val) { document.getElementById('glow-label').innerText = '当前强度：' + val + 'px'; document.documentElement.style.setProperty('--glow-spread', val + 'px'); }
+        function updateTheme(color) { document.documentElement.style.setProperty('--sys-theme', color); let progress = document.getElementById('progress-bar'); if(progress) progress.style.background = `linear-gradient(90deg, transparent, ${color})`; }
+        function toggleStrictMode(isChecked) { const rows = document.querySelectorAll('.holo-card'); rows.forEach((row, index) => { if(isChecked && index % 2 !== 0) row.style.display = 'none'; else row.style.display = 'flex'; }); }
+        function toggleAnonymity(isChecked) { const sourceCells = document.querySelectorAll('.source-col'); sourceCells.forEach(cell => { if (isChecked) { cell.innerHTML = '<span class="bg-gray-800 text-gray-400 px-2 py-0.5 rounded font-tech text-[9px] tracking-widest border border-gray-600 shadow-inner">ENCRYPTED_HASH</span>'; } else { cell.innerText = "SRC: " + cell.getAttribute('data-original'); } }); }
+        function updateDepth(val) { document.getElementById('depth-label').innerText = '当前计算层数：' + val + ' Layers'; const glowVal = parseInt(val) / 8; document.getElementById('glow-slider').value = glowVal; updateGlow(glowVal); }
 
-        function updateTheme(color) {
-            document.documentElement.style.setProperty('--sys-theme', color);
-            let progress = document.getElementById('progress-bar');
-            if(progress) progress.style.background = `linear-gradient(90deg, transparent, ${color})`;
-        }
-
-        function toggleStrictMode(isChecked) {
-            const rows = document.querySelectorAll('.holo-card');
-            rows.forEach((row, index) => {
-                if(isChecked && index % 2 !== 0) row.style.display = 'none';
-                else row.style.display = 'flex';
-            });
-        }
-
-        function toggleAnonymity(isChecked) {
-            const sourceCells = document.querySelectorAll('.source-col');
-            sourceCells.forEach(cell => {
-                if (isChecked) {
-                    cell.innerHTML = '<span class="bg-gray-800 text-gray-400 px-2 py-0.5 rounded font-tech text-[9px] tracking-widest border border-gray-600 shadow-inner">ENCRYPTED_HASH</span>';
-                } else {
-                    cell.innerText = "SRC: " + cell.getAttribute('data-original');
-                }
-            });
-        }
-
-        function updateDepth(val) {
-            document.getElementById('depth-label').innerText = '当前计算层数：' + val + ' Layers';
-            const glowVal = parseInt(val) / 8;
-            document.getElementById('glow-slider').value = glowVal;
-            updateGlow(glowVal);
-        }
-
-        // 【核弹级修复】：加入了 5 秒倒计时和自动注销踢出系统功能
         function triggerPurge() {
             if(confirm("CRITICAL WARNING: 确定要执行最高级别物理销毁协议吗？\n警告：系统缓存的矩阵数据将被瞬间熔断抹除！")) {
-                
                 fetch('/api/purge_all', { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
                         if(data.code === 200) {
                             const mainArea = document.getElementById('main-content-area');
-                            
-                            // 显示红色警告页面，并加入倒计时 UI
                             mainArea.innerHTML = `
                                 <div class="h-full w-full bg-red-950/40 flex flex-col items-center justify-center animate-[glitch_0.2s_infinite]">
                                     <h1 class="text-red-500 font-tech text-6xl md:text-8xl mb-4 tracking-[0.2em] font-black drop-shadow-[0_0_30px_rgba(239,68,68,1)]">SYSTEM PURGED</h1>
@@ -686,24 +607,14 @@
                                     <p id="countdown-text" class="text-white font-tech text-xl mt-8 tracking-widest bg-red-600 px-4 py-1 rounded">TERMINATING CONNECTION IN 5...</p>
                                 </div>
                             `;
-
-                            // 执行 5 秒倒计时
                             let countdown = 5;
                             const countdownText = document.getElementById('countdown-text');
                             const timerInterval = setInterval(() => {
                                 countdown--;
-                                if(countdown > 0) {
-                                    countdownText.innerText = 'TERMINATING CONNECTION IN ' + countdown + '...';
-                                } else {
-                                    clearInterval(timerInterval);
-                                    // 倒计时结束，跳转到登出接口，彻底清空 session 并回到登录页
-                                    window.location.href = '/logout';
-                                }
+                                if(countdown > 0) { countdownText.innerText = 'TERMINATING CONNECTION IN ' + countdown + '...'; } 
+                                else { clearInterval(timerInterval); window.location.href = '/logout'; }
                             }, 1000);
-
-                        } else {
-                            alert("销毁失败，系统防御阻止了该指令！");
-                        }
+                        } else { alert("销毁失败，系统防御阻止了该指令！"); }
                     });
             }
         }
