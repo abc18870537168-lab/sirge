@@ -2,37 +2,54 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统注册 - iPhone 18 系列预测中台</title>
+    <title>申请权限 - iPhone 18 系列数据中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #030710; background-image: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.05), transparent 60%); color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .tech-panel { background: rgba(7, 12, 23, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(168, 85, 247, 0.2); box-shadow: 0 0 30px rgba(168, 85, 247, 0.1); border-radius: 12px; padding: 40px; width: 100%; max-w: 400px; text-align: center; }
-        .input-field { width: 100%; padding: 12px; margin-bottom: 20px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: #a855f7; border-radius: 6px; box-sizing: border-box; transition: all 0.3s; }
-        .input-field:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
-        .submit-btn { width: 100%; padding: 12px; background: #a855f7; color: #fff; font-family: 'Orbitron', sans-serif; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s; letter-spacing: 1px; }
-        .submit-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #a855f7; }
-        .link-text { display: inline-block; margin-top: 20px; color: gray; font-size: 12px; text-decoration: none; font-family: 'Orbitron', sans-serif; transition: color 0.3s; }
-        .link-text:hover { color: #a855f7; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body>
-    <div class="tech-panel">
-        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 24px; color: #a855f7; margin-bottom: 5px; letter-spacing: 2px;">NEXUS-18 ENROLL</h1>
-        <p style="color: gray; font-size: 12px; margin-bottom: 30px;">申请 iPhone 18 系列情报阵地访问权限</p>
-        
+<body class="bg-gray-900 h-screen flex justify-start items-center pl-[12%] bg-[url('/static/login_bg.png')] bg-cover bg-center bg-no-repeat">
+
+    <div class="absolute inset-0 bg-blue-900/20"></div>
+
+    <div class="glass-panel relative z-10 p-10 rounded-2xl shadow-2xl w-[400px]">
+        <div class="text-left mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2 tracking-wide">✨ 注册权限</h1>
+            <p class="text-blue-400 text-sm">创建您的独立分析师档案</p>
+        </div>
+
         {% if error %}
-        <p style="color: #ff4444; font-size: 12px; margin-bottom: 15px;">{{ error }}</p>
+        <div class="bg-red-500/20 border border-red-500 text-red-400 text-sm p-3 rounded-lg mb-4 text-center">
+            {{ error }}
+        </div>
         {% endif %}
-        
-        <form method="POST">
-            <input type="text" name="username" class="input-field" placeholder="设定新操作员 ID" required>
-            <input type="password" name="password" class="input-field" placeholder="设定高强度安全密钥" required>
-            <button type="submit" class="submit-btn">注入档案 [REGISTER]</button>
+
+        <form action="/register" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-gray-300 text-sm font-bold mb-1">设置账号</label>
+                <p class="text-xs text-gray-500 mb-2">支持中英文、数字组合，最长20个字符</p>
+                <input type="text" name="username" required placeholder="如：系统管理员01" class="w-full px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-600 text-white focus:outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <div>
+                <label class="block text-gray-300 text-sm font-bold mb-1">设置秘钥</label>
+                <p class="text-xs text-gray-500 mb-2">安全要求：至少6位字符，建议字母数字组合</p>
+                <input type="password" name="password" required placeholder="请输入大于6位的密码" class="w-full px-4 py-3 rounded-lg bg-gray-900/60 border border-gray-600 text-white focus:outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold py-3 mt-4 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
+                立 即 注 册
+            </button>
         </form>
-        
-        <a href="/" class="link-text"><< 返回登录节点 [RETURN]</a>
+
+        <p class="text-left text-gray-400 text-sm mt-8 border-t border-gray-700/50 pt-6">
+            已有档案？ <a href="/" class="text-blue-400 hover:text-blue-300 underline font-bold">返回直接登录</a>
+        </p>
     </div>
+
 </body>
 </html>
