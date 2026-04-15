@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>预测中台 - 全息情报矩阵</title>
+    <title>预测中台 - iPhone 18 系列全息矩阵</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -74,7 +74,7 @@
                 <div class="w-12 h-12 border-4 border-t-cyan-400 border-r-transparent border-b-purple-500 border-l-transparent rounded-full animate-spin"></div>
                 <div>
                     <h1 class="text-3xl font-black tracking-widest text-white drop-shadow-[0_0_15px_var(--sys-theme)]">NEXUS-18 CORE</h1>
-                    <p class="text-xs tracking-widest uppercase opacity-70">Initializing iPhone 18 Matrix...</p>
+                    <p class="text-xs tracking-widest uppercase opacity-70">Initializing iPhone 18 Series Matrix...</p>
                 </div>
             </div>
             <div id="boot-logs" class="h-48 overflow-hidden text-green-400 font-mono text-xs"></div>
@@ -87,8 +87,7 @@
                 <h3 id="modal-title" class="text-white font-bold tracking-widest text-xl" style="color: var(--sys-theme)"></h3>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-red-500 text-4xl font-tech transition-colors">&times;</button>
             </div>
-            <div id="modal-content" class="p-6 overflow-y-auto custom-scrollbar space-y-5 flex-1">
-                </div>
+            <div id="modal-content" class="p-6 overflow-y-auto custom-scrollbar space-y-5 flex-1"></div>
             <div class="p-4 bg-black/40 border-t border-gray-800 text-center text-[10px] text-gray-500 font-tech">NODE_END_OF_STREAM</div>
         </div>
     </div>
@@ -126,7 +125,6 @@
         <div class="flex-1 overflow-y-auto p-6 relative" id="main-content-area">
 
             <div id="page-dashboard" class="space-y-6 block animate-fade-in-up">
-                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="tech-panel p-6 rounded-xl overflow-hidden group">
                         <p class="text-gray-400 text-xs mb-1 font-bold tracking-widest uppercase">情报矩阵库容</p>
@@ -175,7 +173,7 @@
                                     </select>
                                     <input type="text" name="source" placeholder="信源 (如:郭明錤)" required autocomplete="off" class="w-1/2 terminal-input p-3 text-xs rounded-lg">
                                 </div>
-                                <textarea name="content" rows="2" placeholder="在此输入苹果 18 最新情报..." required class="w-full terminal-input p-3 text-xs rounded-lg resize-none"></textarea>
+                                <textarea name="content" rows="2" placeholder="在此输入苹果 18 系列最新情报..." required class="w-full terminal-input p-3 text-xs rounded-lg resize-none"></textarea>
                                 <button type="submit" class="w-full neon-btn py-3 text-xs font-bold tracking-[0.2em] rounded-lg shadow-lg">确认发布到大屏</button>
                             </form>
                             <div class="mt-4 pt-4 border-t border-gray-800/80">
@@ -239,7 +237,7 @@
                         <span class="text-[10px] font-tech text-gray-500 ml-4 tracking-widest uppercase">System_Terminal_v7.0</span>
                     </div>
                     <div id="terminal-output" class="flex-1 overflow-y-auto font-tech text-[10px] leading-relaxed custom-scrollbar pr-2" style="color: var(--sys-theme)">
-                        > 终端已就绪，点击运行按钮开始解构 iPhone 18 爆料特征...
+                        > 终端已就绪，点击运行按钮开始解构 iPhone 18 系列特征...
                     </div>
                 </div>
 
@@ -322,11 +320,10 @@
     <script id="flask-data" type="text/plain">{{ rumors | tojson | safe }}</script>
 
     <script>
-        // --- 0. 系统开机动画 ---
         const bootLogs = [
             "Bypassing security protocols... [SUCCESS]",
             "Mounting SQLite Matrix Database... [ESTABLISHED]",
-            "Fetching iPhone 18 Pro Max data streams... [DECRYPTED]",
+            "Fetching iPhone 18 Series data streams... [DECRYPTED]",
             "Synchronizing user authentication... [SYNCED]",
             "Welcome back, Operator."
         ];
@@ -343,7 +340,6 @@
             }, 300);
         } else { document.getElementById('boot-screen').style.display = 'none'; }
 
-        // --- 1. 数据解析：【防撞车安全版】 ---
         let rumorData = [];
         try {
             const rawText = document.getElementById('flask-data').textContent.trim();
@@ -351,12 +347,11 @@
             if (rawText && !rawText.includes(braceCheck)) {
                 rumorData = JSON.parse(rawText);
             }
-        } catch (e) { console.error("数据解析失败", e); rumorData = []; }
+        } catch (e) { rumorData = []; }
 
         const totalRecords = rumorData.length;
         if(totalRecords > 0) document.getElementById('ticker-text').innerText = rumorData.map(r => `> [NEW_NODE]: ${r.category} | SRC: ${r.source.toUpperCase()} // `).join('');
 
-        // --- 2. 页面动态数值 ---
         document.addEventListener('DOMContentLoaded', function() {
             let calcThreshold = totalRecords === 0 ? 0 : Math.min(99.8, 75.0 + (totalRecords * 2.5));
             document.getElementById('global-threshold').innerText = '>' + calcThreshold.toFixed(1) + '%';
@@ -380,7 +375,6 @@
             }
         });
 
-        // --- 3. 深度演算引擎 ---
         let isTrained = false, isTraining = false;
         window.currentReportData = [];
 
@@ -420,7 +414,7 @@
                         .then(res => res.json())
                         .then(data => {
                             isTraining = false; isTrained = true; spin.classList.remove('animate-spin');
-                            document.getElementById('model-title').innerText = "iPhone 18 Pro Max 解构报告生成完毕";
+                            document.getElementById('model-title').innerText = "iPhone 18 系列解构报告生成完毕";
                             document.getElementById('model-status-text').innerText = "CALCULATION COMPLETE [100%]";
                             
                             window.currentReportData = data.data; 
@@ -453,7 +447,6 @@
             }, 400);
         }
 
-        // --- 4. 弹窗控制 ---
         function showCategoryDetails(categoryName) {
             const cat = window.currentReportData.find(d => d.category === categoryName);
             if(!cat) return;
@@ -473,7 +466,6 @@
         function closeModal() { document.getElementById('details-modal').classList.add('hidden'); }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
 
-        // --- 5. 视觉魔术设定 ---
         function updateGlow(val) { document.getElementById('glow-label').innerText = '当前：' + val + 'px'; document.documentElement.style.setProperty('--glow-spread', val + 'px'); }
         function updateTheme(color) { document.documentElement.style.setProperty('--sys-theme', color); }
         
@@ -503,7 +495,6 @@
             updateGlow(glowVal);
         }
         
-        // --- 6. 物理销毁核心指令：5秒倒计时 + 强制踢出登录 ---
         function triggerPurge() {
             if(confirm("❗ 警告：确定执行最高等级物理销毁协议吗？\n警告：所有云端数据库记录将被瞬间抹除！")) {
                 fetch('/api/purge_all', { method: 'POST' })
