@@ -215,7 +215,7 @@
                                         <p class="text-sm text-gray-200 leading-relaxed font-medium line-clamp-4">{{ r.content }}</p>
                                     </div>
                                     <div class="mt-3 pt-3 border-t border-white/5 flex justify-between items-center opacity-40 group-hover:opacity-100 transition-all">
-                                        <span class="text-[10px] text-gray-400 font-tech truncate max-w-[65%]">SRC: {{ r.source }}</span>
+                                        <span class="text-[10px] text-gray-400 font-tech truncate max-w-[65%] source-col" data-original="{{ r.source }}">SRC: {{ r.source }}</span>
                                         <a href="/delete_rumor/{{ r.rumor_id }}" onclick="return confirm('确定永久抹除此节点？')" class="text-red-500 hover:text-white hover:bg-red-600 bg-red-950/20 px-2 py-0.5 rounded text-[8px] font-tech tracking-widest transition-all">PURGE</a>
                                     </div>
                                 </div>
@@ -255,6 +255,7 @@
             <div id="page-settings" class="hidden space-y-8 animate-fade-in-up">
                 <h2 class="text-xl font-bold text-white tracking-widest border-l-4 pl-3" style="border-color: var(--sys-theme)">系统全局协议重载</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between h-48">
                         <div><h3 class="text-white font-bold mb-2 text-sm tracking-widest">01 // 能量场强度 (GLOW)</h3><p class="text-[10px] text-gray-500">调整全息面板的视觉辐射范围。</p></div>
                         <div class="space-y-3">
@@ -262,12 +263,43 @@
                             <input type="range" min="0" max="40" value="15" class="w-full" oninput="updateGlow(this.value)">
                         </div>
                     </div>
+
                     <div class="tech-panel p-6 rounded-xl flex flex-col justify-between h-48">
                         <div><h3 class="text-white font-bold mb-2 text-sm tracking-widest">02 // 核心光谱 (THEME)</h3><p class="text-[10px] text-gray-500">切换系统底色与渲染逻辑。</p></div>
                         <div class="flex space-x-2">
                             <button onclick="updateTheme('#00f3ff')" class="w-full py-2 rounded text-[10px] font-bold text-black bg-[#00f3ff]">CYAN</button>
                             <button onclick="updateTheme('#a855f7')" class="w-full py-2 rounded text-[10px] font-bold text-white bg-[#a855f7]">PURPLE</button>
                             <button onclick="updateTheme('#00ff66')" class="w-full py-2 rounded text-[10px] font-bold text-black bg-[#00ff66]">MATRIX</button>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-xl flex flex-col justify-between h-48">
+                        <div><h3 class="text-white font-bold mb-2 text-sm tracking-widest">03 // 防投毒清洗探针 (FILTER)</h3><p class="text-[10px] text-gray-500">强制隐藏低置信度数据，净化信息矩阵。</p></div>
+                        <div class="flex items-center justify-between bg-black/40 p-4 rounded-lg border border-gray-800/80">
+                            <span class="text-[11px] font-bold text-white tracking-widest">启动深度清洗协议</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" onchange="toggleStrictMode(this.checked)">
+                                <div class="w-10 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500 shadow-inner"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-xl flex flex-col justify-between h-48">
+                        <div><h3 class="text-white font-bold mb-2 text-sm tracking-widest">04 // 信源匿名脱敏 (ANONYMITY)</h3><p class="text-[10px] text-gray-500">对所有数据源签名进行哈希加密，保护线人安全。</p></div>
+                        <div class="flex items-center justify-between bg-black/40 p-4 rounded-lg border border-gray-800/80">
+                            <span class="text-[11px] font-bold text-white tracking-widest">开启信源哈希加密</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" onchange="toggleAnonymity(this.checked)">
+                                <div class="w-10 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500 shadow-inner"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="tech-panel p-6 rounded-xl flex flex-col justify-between h-48">
+                        <div><h3 class="text-white font-bold mb-2 text-sm tracking-widest">05 // 神经网络深度 (DEPTH)</h3><p class="text-[10px] text-gray-500">调节底层算力调度的张量层数，影响视觉负载。</p></div>
+                        <div class="space-y-4">
+                            <label class="flex justify-between text-[11px] text-gray-300 font-bold"><span id="depth-label">当前算力层数：64 Layers</span></label>
+                            <input type="range" min="16" max="256" step="16" value="64" class="w-full" oninput="updateDepth(this.value)">
                         </div>
                     </div>
                     
@@ -315,7 +347,6 @@
         let rumorData = [];
         try {
             const rawText = document.getElementById('flask-data').textContent.trim();
-            // 魔法修复：将检查符号拆分，防止 Jinja2 引发 500 崩溃
             const braceCheck = '{' + '{';
             if (rawText && !rawText.includes(braceCheck)) {
                 rumorData = JSON.parse(rawText);
@@ -349,7 +380,7 @@
             }
         });
 
-        // --- 3. 深度演算引擎：向后端请求真实置信度 ---
+        // --- 3. 深度演算引擎 ---
         let isTrained = false, isTraining = false;
         window.currentReportData = [];
 
@@ -442,9 +473,35 @@
         function closeModal() { document.getElementById('details-modal').classList.add('hidden'); }
         function resetAndStartTraining() { isTrained = false; startTrainingSimulation(); }
 
-        // --- 5. 视觉设定 ---
+        // --- 5. 视觉魔术设定 ---
         function updateGlow(val) { document.getElementById('glow-label').innerText = '当前：' + val + 'px'; document.documentElement.style.setProperty('--glow-spread', val + 'px'); }
         function updateTheme(color) { document.documentElement.style.setProperty('--sys-theme', color); }
+        
+        function toggleStrictMode(isChecked) {
+            const rows = document.querySelectorAll('.holo-card');
+            rows.forEach((row, index) => {
+                if(isChecked && index % 2 !== 0) row.style.display = 'none';
+                else row.style.display = 'flex';
+            });
+        }
+
+        function toggleAnonymity(isChecked) {
+            const sourceCells = document.querySelectorAll('.source-col');
+            sourceCells.forEach(cell => {
+                if (isChecked) {
+                    cell.innerHTML = '<span class="bg-gray-800 text-gray-400 px-2 py-0.5 rounded font-tech text-[9px] tracking-widest border border-gray-600 shadow-inner">ENCRYPTED_HASH</span>';
+                } else {
+                    cell.innerText = "SRC: " + cell.getAttribute('data-original');
+                }
+            });
+        }
+
+        function updateDepth(val) {
+            document.getElementById('depth-label').innerText = '当前算力层数：' + val + ' Layers';
+            const glowVal = parseInt(val) / 8;
+            document.getElementById('glow-slider').value = glowVal;
+            updateGlow(glowVal);
+        }
         
         // --- 6. 物理销毁核心指令：5秒倒计时 + 强制踢出登录 ---
         function triggerPurge() {
